@@ -1,0 +1,153 @@
+---
+title: "Multiple systems estimation in R"
+author: "A Pythonista has no name"
+date: '2019-11-26'
+output:
+  html_document:
+    theme: simplex
+    toc: true
+    toc_depth: 2
+    toc_float: true
+
+---
+
+This document should provide everything we need to get started with multiple systems estimation in \texttt{R} using the techniques of [Bales et al. (2015)](https://rss.onlinelibrary.wiley.com/doi/epdf/10.1111/j.1740-9713.2015.00824.x) and [Silverman (2020)](https://arxiv.org/pdf/1902.06078.pdf). I will continue to update it as we go along; please let me know if you run into any difficulty or if you would like to see any addition.
+
+Before we begin, notice the folder `input/silverman_code` in the repository. This is the code and data provided by [Silverman (2020)](https://arxiv.org/pdf/1902.06078.pdf). It is a bit of a mess, but below I explain what exactly we need from it and which functions are relevant.
+
+**Other sources of information on the topic:**
+
+  - Human Rights Data Analysis Group's [MSE guide](https://hrdag.org/tech-notes/basic-mse.html). It goes over the `Rcapture` package, the `dga` package and the `LCMCR` package.
+
+# 1. Minimal working example
+
+Let's load/install the dependencies and source Silverman's package.
+
+```{r loading packages, warning=FALSE, message=FALSE}
+library(knitr)
+# install.packages("kableExtra")
+library(kableExtra)
+library(tidyverse)
+
+# install.packages(c("dga", "MCMCpack", "Rcapture", "LCMCR", "MASS", "coda"))
+library(dga)
+library(MCMCpack)
+library(Rcapture)
+library(LCMCR)
+source("../../input/silverman_code/datasets.R")
+source("../../input/silverman_code/functions.R")
+```
+
+## 1.1 Data
+
+The most important dataset for us is the UK data set with 6 lists. This is the data that was used to produce the 10,000 to 13,000 potential victims of modern slavery estimate in [Bales et al. (2015)](https://rss.onlinelibrary.wiley.com/doi/epdf/10.1111/j.1740-9713.2015.00824.x). Note that the five lists version, combining the Police Force and the National Crime Agency lists, can also be found in `UKdat_5`.
+
+```{r UK data, eval=FALSE}
+UKdat
+```
+
+```{r Pretty table output, echo=FALSE}
+# HTML rendering of the `UKdat` table.
+knitr::kable(UKdat) %>% 
+  kable_styling(full_width=FALSE) %>% 
+  scroll_box(height = "200px", width="500px") %>% 
+  footnote("The data are considered in six lists, labelled as follows:  LA--Local authorities; NG--Non-government organisations; PF--Police forces; GO--Government organisations; GP--General public; NCA--National Crime Agency.", footnote_as_chunk=T)
+```
+
+## 1.2 Silverman's MSE function
+
+The function `MSEfit` is used to obtain population size estimates from this data. This selects interaction terms to add into the model using the AIC criteria and stepwise $p$-value thresholding, as in [Bales et al. (2015)](https://rss.onlinelibrary.wiley.com/doi/epdf/10.1111/j.1740-9713.2015.00824.x).
+
+```{r Computing MSE estate, cache=TRUE}
+fit = MSEfit(UKdat)
+```
+
+We get the estimate and a $95\%$ confidence interval for the total population size as follows:
+```{r}
+fit$CI
+```
+
+Printing the `fit` object provides a little bit more information. 
+```{r}
+fit
+```
+The "number of captured units" represents the total number of observed victims and we can see that two models have been fit. We are interested in the Poisson model. The abundance is the estimated population count, including unseen victims, and we're provided with a standard error and goodness of fit statistics.
+
+We can also recover the estimated coefficients of the log-linear model. Here I used the UK 5 list data (which merges together the Police Force (PF) and the National Crime Agency (NCA) lists) so that we can see the results are the same as what was reported in [Bales et al. (2015)](https://rss.onlinelibrary.wiley.com/doi/epdf/10.1111/j.1740-9713.2015.00824.x).  
+
+```{r Print glm fit, cache=TRUE}
+fit = MSEfit(UKdat_5)
+fit$fit
+```
+
+Let me know if you have any question regarding the meaning of these coefficients; I can explain the log-linear model and the meaning of these things.
+
+# 2. The `Rcapture` package
+
+This section and the following ones are not necessary to get started with the project, but you might want to take a look at them at some point. They will allow us to fit MSE models much more quickly.
+
+The `MSEfit` function uses a particular model selection procedure, based on both an AIC criterion and a $p$-value threshold for the stepwise selection of interaction terms. For faster execution and more flexibility, we can directly call the `Rcapture` package (see also the section below for how to directly use `glm`).
+
+### 2.1 MSE fit with a fixed model
+
+Suppose we want to fit a MSE model with only main effects (no interaction terms between the lists) to the UK data with 5 lists. The lists are refered to by the names `c1`, `c2`, `c3`, ..., in the package `Rcapture`, and we can fit the MSE (Poisson log-linear) model with formula `count ~ 1+c1+c2+c3+c4+c5` as follows:
+
+```{r}
+fit = closedpCI.t(UKdat_5, dfreq = T, mX = ~1+c1+c2+c3+c4+c5)
+fit$CI
+```
+
+If we try to fit the model with all possible interaction terms, then the model is overparameterized. We still get estimates based on the first estimable parameters.
+
+```{r}
+fit = closedpCI.t(UKdat_5, dfreq = T, mX = ~1+(c1+c2+c3+c4+c5)*(c1+c2+c3+c4+c5))
+fit$CI
+```
+
+Again, we can look into the glm fit with a call to `print(fit$fit)`.
+
+## 2.2 MSE with model selection
+
+The `Rcapture` package also allows us to fit all models with possible interaction terms. It limits the number of lists to $5$, however, as otherwise the number of possibilities is too large.
+
+```{r}
+fit = closedpMS.t(UKdat_4, dfreq=TRUE)
+fit
+```
+The result is a list of the best models, as ranked by the BIC criterion. Here the best one is described by the string "[12,13,4]", which means that interaction terms between the lists 1 and 2, and between lists 1 and 3, as well as the main effects of lists 1, 2, 3, and 4, are included. 
+
+Models can be retrained with these interaction terms through the following call:
+```{r}
+closedpCI.t(UKdat_4, dfreq = TRUE, mX = "[12,13,4]")$CI
+```
+
+
+# 3. GLM modelling
+
+The `Rcapture` package is a bit esoteric and is somewhat poorly documented, but we can also fit the MSE models ourselves using the `glm` function in R.
+
+We will use the `complete_MSE_data` function in the file `src/utilities.R`, which adds the zero count observations to the datasets.
+```{r}
+source("../../src/utilities.R")
+data = complete_MSE_data(UKdat_5)
+```
+
+The lists in the `data` dataframe have been renamed `c1`, `c2`, `c3`, ..., for consistency with the `Rcapture` package convention and the observed counts are named `count`. We can now estimate the unknown population size through a `glm` call. Here we only use main effects in the model.
+
+```{r}
+fit = glm(count ~ 1+c1+c2+c3+c4+c5, family="poisson", data=data)
+
+# Estimated size of the unseen population:
+N_unseen = exp(coef(fit)[["(Intercept)"]])
+
+# Confidence interval:
+CI = exp(confint(fit)["(Intercept)",])
+
+# Estimate of the total population size
+c(`Estimated population` = N_unseen + sum(data$count), sum(data$count) + CI)
+```
+
+# 4. Data manipulation and visualization
+
+
+
