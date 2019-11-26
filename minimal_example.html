@@ -262,11 +262,11 @@ div.tocify {
 </div>
 
 
-<p>This document should provide everything we need to get started with multiple systems estimation in  using the techniques of Bales et al. (2015) and Silverman (2020). I will continue to update it as we go along; please let me know if you run into any difficulty or if you would like to see any addition.</p>
-<p>Before we get started, notice the folder <code>silverman_code</code> in the repository. This is the code and data provided by Silverman (2020). It is a bit of a mess, but below I explain what exactly we need from it and which functions are relevant.</p>
+<p>This document should provide everything we need to get started with multiple systems estimation in  using the techniques of <a href="https://rss.onlinelibrary.wiley.com/doi/epdf/10.1111/j.1740-9713.2015.00824.x">Bales et al. (2015)</a> and <a href="https://arxiv.org/pdf/1902.06078.pdf">Silverman (2020)</a>. I will continue to update it as we go along; please let me know if you run into any difficulty or if you would like to see any addition.</p>
+<p>Before we get started, notice the folder <code>silverman_code</code> in the repository. This is the code and data provided by <a href="https://arxiv.org/pdf/1902.06078.pdf">Silverman (2020)</a>. It is a bit of a mess, but below I explain what exactly we need from it and which functions are relevant.</p>
 <div id="minimal-working-example" class="section level1">
 <h1>Minimal working example</h1>
-<p>The first thing we need is to source Silverman’s package.</p>
+<p>Let’s load/install the dependencies and source Silverman’s package.</p>
 <pre class="r"><code>library(knitr)
 # install.packages(&quot;kableExtra&quot;)
 library(kableExtra)
@@ -899,7 +899,7 @@ count
 </div>
 <div id="mse-function" class="section level2">
 <h2>MSE function</h2>
-<p>The function <code>MSEfit</code> is used to obtain population size estimates from this data. This takes a minute to run.</p>
+<p>The function <code>MSEfit</code> is used to obtain population size estimates from this data. This selects interaction terms to add into the model using the AIC criteria and stepwise <span class="math inline">\(p\)</span>-value thresholding, as in Bales et al. (2015).</p>
 <pre class="r"><code>fit = MSEfit(UKdat)</code></pre>
 <p>You can obtain the estimate and a <span class="math inline">\(95\%\)</span> confidence interval as follows:</p>
 <pre class="r"><code>fit$CI</code></pre>
@@ -918,6 +918,22 @@ count
 ##     abundance  infCL   supCL infoCI
 ## mXf   11408.9 9982.3 13181.7     OK</code></pre>
 <p>The “number of captured units” represents the total number of observed victims and we can see that two models have been fit. We are interested in the Poisson model. The abundance is the estimated population count, including unseen victims, and we’re provided with a standard error and goodness of fit statistics.</p>
+<p>You can also recover the estimated coefficients of the log-linear model as follows. Here I used the UK 5 list data so that you can see the results are the same as what was reported in Bales et al. (2015).</p>
+<pre class="r"><code>fit = MSEfit(UKdat_5)
+fit$fit</code></pre>
+<pre><code>## 
+## Call:  glm(formula = formula.glm, family = poisson, data = data.glm, 
+##     offset = cst)
+## 
+## Coefficients:
+## Intercept      beta1      beta2      beta3      beta4      beta5  
+##    9.0559    -5.0885    -2.9051    -2.1485    -2.5218    -3.3053  
+## lambda1_2  lambda2_5  lambda3_5  lambda1_3  lambda4_5  lambda2_4  
+##    1.5240    -2.9217    -1.2468     0.9224    -1.1905    -0.5534  
+## 
+## Degrees of Freedom: 31 Total (i.e. Null);  19 Residual
+## Null Deviance:       28740 
+## Residual Deviance: 16.35     AIC: 127.6</code></pre>
 </div>
 </div>
 

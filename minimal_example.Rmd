@@ -11,9 +11,9 @@ output:
 
 ---
 
-This document should provide everything we need to get started with multiple systems estimation in \texttt{R} using the techniques of Bales et al. (2015) and Silverman (2020). I will continue to update it as we go along; please let me know if you run into any difficulty or if you would like to see any addition.
+This document should provide everything we need to get started with multiple systems estimation in \texttt{R} using the techniques of [Bales et al. (2015)](https://rss.onlinelibrary.wiley.com/doi/epdf/10.1111/j.1740-9713.2015.00824.x) and [Silverman (2020)](https://arxiv.org/pdf/1902.06078.pdf). I will continue to update it as we go along; please let me know if you run into any difficulty or if you would like to see any addition.
 
-Before we get started, notice the folder `silverman_code` in the repository. This is the code and data provided by Silverman (2020). It is a bit of a mess, but below I explain what exactly we need from it and which functions are relevant.
+Before we get started, notice the folder `silverman_code` in the repository. This is the code and data provided by [Silverman (2020)](https://arxiv.org/pdf/1902.06078.pdf). It is a bit of a mess, but below I explain what exactly we need from it and which functions are relevant.
 
 # Minimal working example
 
@@ -52,7 +52,7 @@ knitr::kable(UKdat) %>%
 
 ## MSE function
 
-The function `MSEfit` is used to obtain population size estimates from this data. This takes a minute to run.
+The function `MSEfit` is used to obtain population size estimates from this data. This selects interaction terms to add into the model using the AIC criteria and stepwise $p$-value thresholding, as in Bales et al. (2015).
 
 ```{r Computing MSE estate, cache=TRUE}
 fit = MSEfit(UKdat)
@@ -69,6 +69,12 @@ fit
 ```
 The "number of captured units" represents the total number of observed victims and we can see that two models have been fit. We are interested in the Poisson model. The abundance is the estimated population count, including unseen victims, and we're provided with a standard error and goodness of fit statistics.
 
+You can also recover the estimated coefficients of the log-linear model as follows. Here I used the UK 5 list data so that you can see the results are the same as what was reported in Bales et al. (2015).  
+
+```{r Print glm fit, cache=TRUE}
+fit = MSEfit(UKdat_5)
+fit$fit
+```
 
 
 
