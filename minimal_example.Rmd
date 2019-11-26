@@ -1,0 +1,74 @@
+---
+title: "Multiple systems estimation in R"
+author: "A Pythonista has no name"
+date: '2019-11-26'
+output:
+  html_document:
+    theme: simplex
+    toc: true
+    toc_depth: 2
+    toc_float: true
+
+---
+
+This document should provide everything we need to get started with multiple systems estimation in \texttt{R} using the techniques of Bales et al. (2015) and Silverman (2020). I will continue to update it as we go along; please let me know if you run into any difficulty or if you would like to see any addition.
+
+Before we get started, notice the folder `silverman_code` in the repository. This is the code and data provided by Silverman (2020). It is a bit of a mess, but below I explain what exactly we need from it and which functions are relevant.
+
+# Minimal working example
+
+The first thing we need is to source Silverman's package.
+
+```{r loading packages, warning=FALSE, message=FALSE}
+library(knitr)
+# install.packages("kableExtra")
+library(kableExtra)
+library(tidyverse)
+
+# install.packages(c("dga", "MCMCpack", "Rcapture", "LCMCR", "MASS", "coda"))
+library(dga)
+library(MCMCpack)
+library(Rcapture)
+library(LCMCR)
+source("silverman_code/datasets.R")
+source("silverman_code/functions.R")
+```
+
+## Data
+
+The most important dataset for us is the UK data set with 6 lists. This is the data that was used to produce the 10,000 to 13,000 potential victims of modern slavery estimate in Bales et al. (2015). Note that the five lists version can also be found in `UKdat_5`.
+
+```{r UK data, eval=FALSE}
+UKdat
+```
+
+```{r Pretty table output, echo=FALSE}
+# HTML rendering of the `UKdat` table.
+knitr::kable(UKdat) %>% 
+  kable_styling(full_width=FALSE) %>% 
+  scroll_box(height = "200px", width="500px") %>% 
+  footnote("The data are considered in six lists, labelled as follows:  LA--Local authorities; NG--Non-government organisations; PF--Police forces; GO--Government organisations; GP--General public; NCA--National Crime Agency.", footnote_as_chunk=T)
+```
+
+## MSE function
+
+The function `MSEfit` is used to obtain population size estimates from this data. This takes a minute to run.
+
+```{r Computing MSE estate, cache=TRUE}
+fit = MSEfit(UKdat)
+```
+
+You can obtain the estimate and a $95\%$ confidence interval as follows:
+```{r}
+fit$CI
+```
+
+Printing the `fit` object provides a little bit more information. 
+```{r}
+fit
+```
+The "number of captured units" represents the total number of observed victims and we can see that two models have been fit. We are interested in the Poisson model. The abundance is the estimated population count, including unseen victims, and we're provided with a standard error and goodness of fit statistics.
+
+
+
+
