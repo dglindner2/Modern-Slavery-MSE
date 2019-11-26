@@ -17,7 +17,7 @@ Before we get started, notice the folder `silverman_code` in the repository. Thi
 
 # Minimal working example
 
-The first thing we need is to source Silverman's package.
+Let's load/install the dependencies and source Silverman's package.
 
 ```{r loading packages, warning=FALSE, message=FALSE}
 library(knitr)
