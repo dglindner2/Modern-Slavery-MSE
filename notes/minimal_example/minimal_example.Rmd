@@ -108,7 +108,7 @@ Again, we can look into the glm fit with a call to `print(fit$fit)`.
 
 ## 2.2 MSE with model selection
 
-The `Rcapture` package also allows us to fit all models with possible interaction terms. It limits the number of lists to $5$, however, as otherwise the number of possibilities is too large.
+The `Rcapture` package also allows us to fit all possible selections of interaction terms. It limits the number of lists to $5$, however, as otherwise the number of possibilities is too large.
 
 ```{r}
 fit = closedpMS.t(UKdat_4, dfreq=TRUE)
