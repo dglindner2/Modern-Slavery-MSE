@@ -88,7 +88,7 @@ This section and the following ones are not necessary to get started with the pr
 
 The `MSEfit` function uses a particular model selection procedure, based on both an AIC criterion and a $p$-value threshold for the stepwise selection of interaction terms. For faster execution and more flexibility, we can directly call the `Rcapture` package (see also the section below for how to directly use `glm`).
 
-### 2.1 MSE fit with a fixed model
+## 2.1 MSE fit with a fixed model
 
 Suppose we want to fit a MSE model with only main effects (no interaction terms between the lists) to the UK data with 5 lists. The lists are refered to by the names `c1`, `c2`, `c3`, ..., in the package `Rcapture`, and we can fit the MSE (Poisson log-linear) model with formula `count ~ 1+c1+c2+c3+c4+c5` as follows:
 
@@ -148,6 +148,28 @@ c(`Estimated population` = N_unseen + sum(data$count), sum(data$count) + CI)
 ```
 
 # 4. Data manipulation and visualization
+
+```{r}
+# install.packages("UpSetR")
+# See this vignette: https://cran.r-project.org/web/packages/UpSetR/vignettes/basic.usage.html
+library(UpSetR) 
+```
+
+```{r}
+plot_MSE_counts <- function(data, ...) {
+  n = ncol(data) - 1
+  dat = uncount(data[, 1:n], data$count)
+  upset(dat, nsets=n, ...)
+}
+
+plot_MSE_counts(UKdat, 
+                # empty.intersections=T,
+                sets.bar.color = "cornflowerblue",
+                main.bar.color = "cornflowerblue",
+                matrix.color = "cornflowerblue",
+                mainbar.y.label = "Potential victims count",
+                sets.x.label = "")
+```
 
 
 
