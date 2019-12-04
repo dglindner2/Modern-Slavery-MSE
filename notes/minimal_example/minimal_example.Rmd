@@ -28,6 +28,8 @@ library(knitr)
 # install.packages("kableExtra")
 library(kableExtra)
 library(tidyverse)
+# devtools::install_github("fellstat/shinyrecap")
+# library(shinyrecap)
 
 # install.packages(c("dga", "MCMCpack", "Rcapture", "LCMCR", "MASS", "coda"))
 library(dga)
@@ -149,6 +151,8 @@ c(`Estimated population` = N_unseen + sum(data$count), sum(data$count) + CI)
 
 # 4. Data manipulation and visualization
 
+## Intersection plot
+
 ```{r}
 # install.packages("UpSetR")
 # See this vignette: https://cran.r-project.org/web/packages/UpSetR/vignettes/basic.usage.html
@@ -171,5 +175,32 @@ plot_MSE_counts(UKdat,
                 sets.x.label = "")
 ```
 
+
+## Histogram of the observation counts
+
+```{r}
+dat = complete_MSE_data(UKdat_4)
+n_lists = ncol(dat) - 1
+
+n_obs = dat %>% 
+  mutate(n_obs = rowSums(dat[, 1:n_lists])) %>% 
+  group_by(n_obs) %>% 
+  summarize(n_count = sum(count))
+
+
+source("prettyplot.R")
+plot(n_obs$n_obs, log(n_obs$n_count),
+     xticks=1:4,
+     xlab="Number of lists in which victims have appeared",
+     ylab="log count")
+```
+
+## Venn diagrams
+
+
+
+```{r}
+venn4(c(0, complete_MSE_data(UKdat_4)$count))
+```
 
 
