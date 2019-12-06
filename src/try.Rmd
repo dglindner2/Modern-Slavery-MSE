@@ -20,16 +20,66 @@ library(dga)
 library(MCMCpack)
 library(Rcapture)
 library(LCMCR)
-source("input/silverman_code/datasets.R")
-source("input/silverman_code/functions.R")
+source("../input/silverman_code/datasets.R")
+source("../input/silverman_code/functions.R")
+source("../src/prettyplot.R")
 ```
 
 
 ```{r UK data, eval=FALSE}
-UKdat
+UKdat_4
 ```
 ```{r}
-model <- MSEfit(UKdat)
+model <- MSEfit(UKdat_4)
+
+Y = simulate(model$fit, nsim=100)
+X = model.matrix(model$fit)
+
+
+
+glm(Y[,1] ~ -1 + X, family=poisson)
+
+
+```
+
+```{r}
+
+simulate_data <- function(fitted, nsim, n_lists) {
+  Y = simulate(fitted, nsim=100)
+  mat = model.matrix(fitted)
+  
+  # Binary table with all combinations of zeros and ones
+  X = eval(parse(text=
+                   paste0("table(", paste0(rep("c(0,1)", n_lists), collapse=","), ")")
+  )) %>% 
+    as.data.frame.table %>% 
+    map_dfc(as.numeric) - 1
+  X = X[nrow(X):2, n_lists:1]
+  colnames(X) = paste0("list", 1:n_lists)
+
+  cbind(Y, X)
+}
+
+true_abondance = model$CI[1]
+nsim = 100
+n_lists = 4
+
+dat = simulate_data(model$fit, nsim=nsim, n_lists=n_lists)
+simulation_names = paste0("sim_", 1:nsim)
+list_names = paste0("list", 1:n_lists)
+
+
+estimates = sapply(simulation_names, function(sim) {
+  MSEfit(dat[, c(paste0("list", 1:4), sim)])$CI[1]
+})
+
+```
+
+```{r}
+hist(estimates, xlab="Estimated abundance", xlim=c(9000, 14000))
+abline(v=true_abondance)
+abline(v=model$CI[2], lty=2)
+abline(v=model$CI[3], lty=2)
 ```
 
 ```{r}
