@@ -1,0 +1,90 @@
+---
+title: "Untitled"
+author: "Pierre Gardan"
+date: "12/6/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r loading packages, warning=FALSE, message=FALSE}
+library(knitr)
+# install.packages("kableExtra")
+library(kableExtra)
+library(tidyverse)
+
+# install.packages(c("dga", "MCMCpack", "Rcapture", "LCMCR", "MASS", "coda"))
+library(dga)
+library(MCMCpack)
+library(Rcapture)
+library(LCMCR)
+source("input/silverman_code/datasets.R")
+source("input/silverman_code/functions.R")
+```
+
+
+```{r UK data, eval=FALSE}
+UKdat
+```
+```{r}
+model <- MSEfit(UKdat)
+```
+
+```{r}
+est_A <- rpois(1000, )
+ones <- c() 
+zeros <- c() 
+for (est in est_A){ 
+  samp <- rpois(,est) 
+  zeros <- c(zeros, length(samp[samp==0])) 
+  ones <- c(ones, length(samp[samp==1])) 
+} 
+plot(zeros, ones, ylim=c()) 
+points(, col = "red")
+
+```
+
+
+```{r}
+UK.full <- data.frame()
+
+for(i in 1:length(UKdat[,1])){
+LA = rep(x=UKdat[i,1], times = as.numeric(UKdat$count[i]))
+NG = rep(x=UKdat[i,2], times = as.numeric(UKdat$count[i]))
+PF = rep(x=UKdat[i,3], times = as.numeric(UKdat$count[i]))
+GO = rep(x=UKdat[i,4], times = as.numeric(UKdat$count[i]))
+GP = rep(x=UKdat[i,5], times = as.numeric(UKdat$count[i]))
+NCA= rep(x=UKdat[i,6], times = as.numeric(UKdat$count[i]))
+
+col= cbind(LA, NG, PF, GO, GP, NCA)
+
+UK.full <- rbind(UK.full, col)
+}
+```
+
+
+```{r}
+estimation <- list()
+for(i in 1 : 10000)
+samp <- UK.full[sample(nrow(UK.full), 500, replace = TRUE), ]
+samp <- count.dups(samp) 
+fit = MSEfit(samp)
+estimation <- 
+}
+
+
+
+# a far simpler `data.table` approach
+library(data.table)
+count.dups <- function(DF){
+
+  DT <- data.table(DF)
+  DT[,.N, by = names(DT)]
+}
+count.dups(samp)
+
+```
+
+
