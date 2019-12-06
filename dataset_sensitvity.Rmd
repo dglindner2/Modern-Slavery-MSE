@@ -1,0 +1,101 @@
+---
+title: "Dataset Sensitivity"
+author: "Morris Greenberg"
+date: "12/6/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+# install.packages("kableExtra")
+library(kableExtra)
+library(tidyverse)
+
+# install.packages(c("dga", "MCMCpack", "Rcapture", "LCMCR", "MASS", "coda"))
+library(dga)
+library(MCMCpack)
+library(Rcapture)
+library(LCMCR)
+source("input/silverman_code/datasets.R")
+source("input/silverman_code/functions.R")
+```
+
+## R Markdown
+
+```{r extract_dataset}
+extract_dataset <- function(dataset){
+  if(is.character(dataset)){
+    data1 <- get(dataset)
+  }
+  
+  else if(is.data.frame(dataset)){
+    data1 <- dataset
+  }
+  else{
+    stop("dataset must be either a string referring to a data frame or a data frame.")
+  }
+  
+  return(data1)
+}
+```
+
+```{r return_list_names}
+
+list_choices <- function(dataset){
+  
+  dataset <- extract_dataset(dataset)
+  
+  cols <- colnames(dataset)
+  
+  return(cols[-length(cols)])
+}
+```
+
+```{r combine_delete_lists}
+combine_lists <- function(dataset, listname1, listname2){
+  
+  dataset <- extract_dataset(dataset)
+  
+  listnames <- list_choices(dataset)
+  
+  if(!(listname1 %in% listnames | listname2 %in% listnames)){
+    stop(paste0("listname1 and listname2 must be two columns within ", dataset))
+  }
+  
+  listnames_keep <- listnames[!(listnames %in% c(listname1, listname2))]
+  
+  combined_list <- ifelse(as.numeric(dataset[,listname1]) + as.numeric(dataset[,listname2]), 1, 0)
+  combined_listname <- paste(listname1, listname2, sep="_")
+  names(combined_list) <- combined_listname
+  
+  dataset_combined <- cbind(dataset[,listnames_keep], combined_list, dataset$Frequency)
+  
+  colnames(dataset_combined) <- c(listnames_keep, combined_listname, "Frequency")
+  
+  dataset_grouped <- dataset_combined %>%
+    group_by_at(colnames(dataset_combined)[!grepl("Frequency", colnames(dataset_combined))]) %>%
+    summarize(Frequency = sum(Frequency))
+  
+  return(dataset_grouped)
+}
+
+remove_list <- function(dataset, listname){
+  
+  dataset <- extract_dataset(dataset)
+  
+  listnames <- list_choices(dataset)
+  
+  if(!(listname %in% listnames)){
+    stop(paste0("listname must be a column within ", dataset))
+  }
+  
+  search_string <- paste(listname, "Frequency", sep="|")
+  
+  dataset_grouped <- dataset %>%
+    group_by_at(colnames(dataset)[!grepl(search_string, colnames(dataset))]) %>%
+    summarize(Frequency = sum(Frequency))
+  
+  return(dataset_grouped)
+}
+
+```
