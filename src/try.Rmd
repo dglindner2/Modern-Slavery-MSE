@@ -20,6 +20,7 @@ library(dga)
 library(MCMCpack)
 library(Rcapture)
 library(LCMCR)
+library(parallel)
 source("../input/silverman_code/datasets.R")
 source("../input/silverman_code/functions.R")
 source("../src/prettyplot.R")
@@ -61,7 +62,7 @@ simulate_data <- function(fitted, nsim, n_lists) {
 }
 
 true_abondance = model$CI[1]
-nsim = 100
+nsim = 20
 n_lists = 4
 
 dat = simulate_data(model$fit, nsim=nsim, n_lists=n_lists)
@@ -69,14 +70,14 @@ simulation_names = paste0("sim_", 1:nsim)
 list_names = paste0("list", 1:n_lists)
 
 
-estimates = sapply(simulation_names, function(sim) {
+estimates = data.frame(mclapply(simulation_names, function(sim) {
   MSEfit(dat[, c(paste0("list", 1:4), sim)])$CI[1]
-})
-
+}, 
+mc.cores = 2))
 ```
 
 ```{r}
-hist(estimates, xlab="Estimated abundance", xlim=c(9000, 14000))
+hist(estimates, xlab="Estimated abundance")
 abline(v=true_abondance)
 abline(v=model$CI[2], lty=2)
 abline(v=model$CI[3], lty=2)
