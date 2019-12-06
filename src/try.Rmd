@@ -70,7 +70,7 @@ simulation_names = paste0("sim_", 1:nsim)
 list_names = paste0("list", 1:n_lists)
 
 
-estimates = data.frame(mclapply(simulation_names, function(sim) {
+estimates = unlist(mclapply(simulation_names, function(sim) {
   MSEfit(dat[, c(paste0("list", 1:4), sim)])$CI[1]
 }, 
 mc.cores = 2))
