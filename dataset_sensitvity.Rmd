@@ -24,6 +24,11 @@ source("input/silverman_code/functions.R")
 
 ```{r extract_dataset}
 extract_dataset <- function(dataset){
+  
+  if(!exists("UKdat")){
+    source("input/silverman_code/datasets.R")
+  }
+  
   if(is.character(dataset)){
     data1 <- get(dataset)
   }
