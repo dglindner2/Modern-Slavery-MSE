@@ -16,6 +16,7 @@ library(dga)
 library(MCMCpack)
 library(Rcapture)
 library(LCMCR)
+library(UpSetR)
 source("input/silverman_code/datasets.R")
 source("input/silverman_code/functions.R")
 ```
@@ -106,3 +107,31 @@ remove_list <- function(dataset, listname){
 }
 
 ```
+
+```{r plot_MSE_counts}
+plot_MSE_counts <- function(data, ...) {
+  
+  data <- as.data.frame(data)
+  n = ncol(data) - 1
+  dat = uncount(data[, 1:n], data$count)
+  
+  upset(dat, nsets=n, ...)
+}
+
+plot_MSE_counts(UKdat, 
+                # empty.intersections=T,
+                sets.bar.color = "cornflowerblue",
+                main.bar.color = "cornflowerblue",
+                matrix.color = "cornflowerblue",
+                mainbar.y.label = "Potential victims count",
+                sets.x.label = "")
+
+plot_MSE_counts(combine_lists(UKdat, "PF", "LA"), 
+                # empty.intersections=T,
+                sets.bar.color = "cornflowerblue",
+                main.bar.color = "cornflowerblue",
+                matrix.color = "cornflowerblue",
+                mainbar.y.label = "Potential victims count",
+                sets.x.label = "")
+```
+
