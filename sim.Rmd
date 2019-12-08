@@ -1,0 +1,580 @@
+---
+title: "simulation"
+author: "George Lindner"
+date: "12/7/2019"
+output: html_document
+---
+
+
+```{r packages, echo = F, warning = F, message=F}
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(kableExtra)
+library(dga)
+library(MCMCpack)
+library(Rcapture)
+library(LCMCR)
+library(tidyverse)
+
+
+MSEfit <- function(zdat = UKdat,
+           mainonly = F,
+           pthresh = 0.05,
+           returnfit
+           = T){
+    require(Rcapture)
+    # if returnfit = T then return the fitted model in the form provided by closedpCI.t
+    #   otherwise return 95% and 80% confidence intervals and the point estimate
+    #
+    # if mainonly= F carry out the stepwise model fitting procedure as set out in Bales,
+    # Hesketh and Silverman, using pthresh as the p-value that new effects have to
+    # achieve before being included.
+    # if mainonly= T then fit main effects only
+    m = dim(zdat)[2] - 1
+    # create and fit a formula with just the main effects
+    fmain = "~."
+    mXform = as.formula(fmain)
+    zfit = closedpCI.t(zdat, dfreq = T, mX = mXform)
+    if (mainonly)
+      return(MSEretconf(zdat, zfit, mXform, returnfit))
+    #
+    aic0 = zfit$fit$aic
+    # set up a list of interactions for the fitting of interactive models
+    # let ints be the matrix of all possible interactions
+    ints = NULL
+    for (i in (1:(m - 1)))
+      for (j in ((i + 1):m)) {
+        ints = cbind(ints, c(i, j))
+      }
+    nints = m * (m - 1) / 2
+    intsincluded = rep(F, nints)
+    # add interactions one at a time trying each possible interaction not yet included
+    for (jcycle in (1:nints)) {
+      # add each possible new interaction and check the improvement in aic
+      aicnew = rep(aic0, nints)
+      for (j in (1:nints)) {
+        if (!intsincluded[j]) {
+          form1 = paste(fmain, "+c", ints[1, j], "*c",
+                        ints[2, j], sep = "")
+          mXf = as.formula(form1)
+          zf = closedpCI.t(zdat, dfreq = T, mX = mXf)
+          aicnew[j] = zf$fit$aic
+        }
+      }
+      # now test if any interaction has made a difference
+      if (min(aicnew) >= aic0)
+        return(MSEretconf(zdat, zfit, mXform, returnfit))
+      aic0 = min(aicnew)
+      jintmax = min((1:nints)[aicnew == aic0])
+      fmain1 = paste(fmain, "+c", ints[1, jintmax], "*c",
+                     ints[2, jintmax], sep = "")
+      mXf = as.formula(fmain1)
+      zf1 = closedpCI.t(zdat, dfreq = T, mX = mXf)
+      pval = rev(summary(zf1$fit)$coefficients[, 4])[1]
+      if (pval > pthresh)
+        return(MSEretconf(zdat, zfit, mXform, returnfit))
+      zfit = zf1
+      mXform = mXf
+      fmain = fmain1
+      intsincluded[jintmax] = T
+    }
+    return(MSEretconf(zdat, zfit, mXform, returnfit))
+}
+
+
+MSEretconf <-
+  function (zdat, zfit, mX, retfit)
+  {
+    # choose whether to return confidence levels or the full fit
+    if (retfit)
+      return(zfit)
+    # construct vector of estimate and confidence levels
+    xx = rep(NA, 5)
+    names(xx) = c("2.5%", "10%", "point estimate", "90%", "97.5%")
+    xx[c(1, 3, 5)] = as.numeric(zfit$CI)[c(2, 1, 3)]
+    zfit1 = closedpCI.t(zdat,
+                        dfreq = T,
+                        mX = mX,
+                        alpha = 0.2)
+    xx[c(2, 4)] = as.numeric(zfit1$CI)[c(2, 3)]
+    return(xx)
+  }
+
+
+```
+
+```{r theme_proj, echo=F}
+
+theme_proj <- ggplot2::theme(legend.position="bottom",
+
+        legend.direction="horizontal",
+
+        legend.key = element_rect(fill="white"),
+
+        text = element_text(family="serif", size = 11, color = "black"),
+
+        panel.background = element_blank(),
+
+        panel.grid.major = element_blank(), 
+
+        panel.grid.minor = element_blank(),
+
+        plot.title = element_text(family="serif", size = 12, face = "bold", 
+
+ hjust=0.5, margin = margin(b = 20, r=0, l=0, t=20)),
+
+        plot.caption = element_text(family="serif", hjust = 0),
+
+        strip.background = element_blank(), 
+
+        axis.line = element_line(color="black", size = .25),
+
+        axis.text.x=element_text (color = "black"),
+
+        axis.text.y=element_text (color = "black"))
+
+```
+
+
+```{r helper function, echo = F}
+get_factors <- function(x) {
+    x <- as.integer(x)
+    div <- seq_len(abs(x))
+    factors <- div[x %% div == 0L]
+    return(factors)
+}
+
+
+
+generate_incl_prob <- function(pop, y_0, y_n, shape){
+  x <- seq(0,1,1/(pop-1))
+  x_n <- 1
+  y <- (y_n - y_0)/(x_n^2) * x^shape + y_0
+  df <- data.frame(person = x, prob = y)
+  
+  return(df)
+}
+
+```
+
+
+```{r Inclusion Prob Plot, echo = FALSE}
+inclusion <- function(pop, y_0, y_n, shape){
+ 
+  # In Shiny app, make slider allowing shape to be .01 to 10 or arbitrary big number
+  #               make slider allowing y_0 to be any number greater than y_n, less than 1
+  #               make slider allowing y_n to be any number less than y_0, greater than 0
+  
+  require(ggplot2)
+  require(dplyr)
+  
+  df <- generate_incl_prob(pop, y_0, y_n, shape)
+  
+  ggplot(data = df, aes(x=person,y=prob)) + 
+    geom_line(color='lightblue', size = 1.1) + 
+    geom_line(data = data.frame(x = 1, y = seq(0,y_n,y_n/10)), 
+              aes(x = x, y = y), color = '#FF9933', linetype = 2) +
+    scale_x_continuous('Individual', 
+                       breaks = c(0,.5,1), 
+                       labels = c('1',round(pop/2),pop), 
+                       limits = c(0,1.2)) + 
+    scale_y_continuous('Inclusion Probability (%)', 
+                       breaks = c(0,y_0,y_n), 
+                       labels = c("0%", paste(y_0*100,"%",sep=''), paste(y_n*100,"%",sep='')), 
+                       limits = c(0,y_0)) +
+    ggtitle('List Inclusion Probabilty for Individuals') + 
+    theme(axis.line = element_line(colour = "black", 
+                      size = 1, linetype = "solid"),
+          plot.title = element_text(hjust=0.5, 
+                                    margin = margin(b = 20, r=0, l=0, t=20)),
+          panel.background = element_blank()) 
+  
+}
+
+inclusion(pop = 1000, y_0 = .08, y_n = .01, shape = 2)
+
+```
+
+### We generate sample lists using the inclusion probabilities above
+
+```{r generating Lists, echo = FALSE, warning = F, message = F}
+
+# Make a function that will generate the data i.e. whether or not a person is included on list
+
+list_df <- function(pop, y_0, y_n, shape, n_lists){
+  # This function takes in inputs of population size (pop),
+  #    Highest Inclusion Probability (y_0)
+  #    Lowest Inclusion Probabiliy (y_n)
+  #    The shape of the line (can be concave up or down, or line)
+  #    The number of lists to generate
+  
+  # This function outputs whether individual i is on list j,
+  # and how many lists individual i is captured by
+  # and the true population size (used in later function)
+  
+  require(dplyr)
+  
+  df <- generate_incl_prob(pop, y_0, y_n, shape)
+  
+  for (i in 1:n_lists){
+    df[,paste("list",i,sep='')] <- rbinom(pop, 1, df$prob)
+  }
+  
+  df <- df %>%
+    dplyr::select(-c(person,prob))
+  
+  df$count <- rowSums(df)
+  df$pop <- pop
+  
+  return(df)
+}
+
+
+list_intersection <- function(pop, y_0, y_n, shape, n_lists){
+  # This function takes in data generated from the function 'list_df'
+  # It outputs every combination of lists and the number of individuals captured
+  # on each on these chosen lists
+  
+  require(dplyr)
+  data <- list_df(pop, y_0, y_n, shape, n_lists)
+  p <- ncol(data) - 2
+  df <- data %>% group_by_at(paste0("list", 1:p)) %>% count() 
+  df <- df[-1,] %>% arrange(desc(n))
+  return(df)
+}
+
+# Example
+
+example <- list_intersection(1000, .08, .01, 2, 5)
+
+knitr::kable(example, caption = 'Example Data Simulation from Selected Inclusion Probabilities') %>% 
+  kable_styling(full_width=FALSE) %>% 
+  scroll_box(height = "300px", width="450px") %>% 
+  footnote("The data is generated from the inclusion probability parameters selected. The count is the number of individuals appearing on a given combination of lists", footnote_as_chunk=T)
+
+```
+
+
+```{r morris plot, eval = F, echo = FALSE, warning = F, message = F}
+morris <- list_df(1000, .08, .01, 2, 5)
+
+
+morris2 <- morris %>%
+  mutate(person = as.integer(rownames(.))) %>%
+  gather(key="list_group", value="count", -pop, -person) %>%
+  dplyr::select(-pop)
+
+m_plot <- ggplot(data=morris2, aes(x=person, y=list_group))+
+  geom_jitter(aes(color=factor(count), alpha=factor(count)), height=0.4, width=NULL) + 
+  labs(title = 'List Intersection Ordered by Inclusion Probability', x = 'Individual', y = '') +
+  theme_bw()
+
+morris_cow <- function(pop, y_0, y_n, shape, n_lists){
+  require(dplyr)
+  x <- seq(0,pop,1)
+  x_n <- 1
+  y <- (y_n - y_0)/(x_n^2) * x^shape + y_0
+  df <- data.frame(x = x, y = y)
+  return(df)
+}
+
+
+new_p <- morris_cow(1000, .08, .01, 2, 5)
+
+xdens <- axis_canvas(m_plot, axis = 'x') +
+  geom_line(data = new_p, aes(x = x, y = y), linetype = 2, color = 'red')
+
+p1 <- insert_xaxis_grob(m_plot, xdens, grid::unit(.2, 'null'), position = 'top')
+
+ggdraw(p1)
+
+
+
+```
+
+
+```{r Morris Parallel, eval = F, echo = FALSE, warning=F, message =F}
+library(parallel)
+
+cl <- makeCluster(1, 'PSOCK')
+
+parReplicate <- function(cl, n, expr, simplify=TRUE, USE.NAMES=TRUE){
+  parSapply(cl, integer(n), function(i, ex) eval(ex, envir=.GlobalEnv),
+            substitute(expr), simplify=simplify, USE.NAMES=USE.NAMES)
+}
+
+clusterExport(cl, varlist=c("list_intersection", "pop", "y_0", "y_n", "shape",
+                            "n_lists", "parReplicate"))
+
+clusterEvalQ(cl, library(tidyverse))
+clusterEvalQ(cl, library(dga))
+clusterEvalQ(cl, library(MCMCpack))
+clusterEvalQ(cl, library(Rcapture))
+clusterEvalQ(cl, library(LCMCR))
+clusterEvalQ(cl, list_df <- function(pop, y_0, y_n, shape, n_lists){
+  # This function takes in inputs of population size (pop),
+  #    Highest Inclusion Probability (y_0)
+  #    Lowest Inclusion Probabiliy (y_n)
+  #    The shape of the line (can be concave up or down, or line)
+  #    The number of lists to generate
+  
+  # This function outputs whether individual i is on list j,
+  # and how many lists individual i is captured by
+  # and the true population size (used in later function)
+  
+  require(dplyr)
+  
+  df <- generate_incl_prob(pop, y_0, y_n, shape)
+  
+  for (i in 1:n_lists){
+    df[,paste("list",i,sep='')] <- rbinom(pop, 1, df$prob)
+  }
+  
+  df <- df %>%
+    dplyr::select(-c(person,prob))
+  
+  df$count <- rowSums(df)
+  df$pop <- pop
+  
+  return(df)
+}
+)
+
+clusterEvalQ(cl, get_factors <- function(x) {
+    x <- as.integer(x)
+    div <- seq_len(abs(x))
+    factors <- div[x %% div == 0L]
+    return(factors)
+})
+
+
+
+clusterEvalQ(cl, generate_incl_prob <- function(pop, y_0, y_n, shape){
+  x <- seq(0,1,1/(pop-1))
+  x_n <- 1
+  y <- (y_n - y_0)/(x_n^2) * x^shape + y_0
+  df <- data.frame(person = x, prob = y)
+  
+  return(df)
+})
+
+
+parReplicate(cl, 1000000, list_intersection(1000, .08, .01, 2, 5))
+
+
+```
+
+
+### How accurate are MSE predictions under these parameters?
+
+```{r check MSE works, echo = FALSE}
+# Generate dataset 1, list_intersection
+# Take d.1, run MSEfit on it. store est
+# ... n times
+# Plot hist of est and highlight true population
+
+MSE_hist <- function(data, pop, nsims){
+  require(ggplot2)
+    ggplot(data, mapping = aes(x = est)) + 
+            geom_histogram(bins = 22, color = "black", fill = "#8dd3c7") +
+            labs(x = "MSE Estimate of Population", y = "Frequency", 
+                 caption = paste("Simulation is based on", nsims, "replications"), title = "") +
+            theme_bw(base_size = 10) +
+  geom_vline(aes(xintercept = pop), color = 'red', linetype = 2)
+}
+
+
+MSEfit_plot <- function(pop, y_0, y_n, shape, n_lists, nsims){
+  
+  EST <- data.frame(est = replicate(nsims, expr = {
+          df <- list_intersection(pop, y_0, y_n, shape, n_lists)
+          closedpCI.t(df, dfreq = T, mX = ~ 1 + .)$CI[1]}
+          ))
+  
+  MSE_hist(EST, pop, nsims)
+
+}
+
+
+MSEFixed_plot <- function(pop, y_0, y_n, shape, n_lists, nsims){
+  
+  EST <- data.frame(est = replicate(nsims, expr = {
+          df <- list_intersection(pop, y_0, y_n, shape, n_lists)
+          closedpCI.t(df, dfreq = T, mX = ~ 1 + .)$CI[1]}))
+  
+  MSE_hist(EST, pop, nsims)
+}
+
+MSEFixed_plot(1000, .08, .01, 2, 5, 10000)
+
+
+# The model selection function cannot be used in simulation, 
+# takes way too long to run 1 time
+MSESelect_plot <- function(pop, y_0, y_n, shape, n_lists, nsims){
+  
+  EST <- data.frame(est = replicate(nsims, expr = {
+    df <- list_intersection(pop, y_0, y_n, shape, n_lists)
+    closedpMS.t(df, dfreq=TRUE)[1,1]
+  }))
+}
+
+```
+
+
+```{r George Plot, eval = F, echo = F}
+# Make function that will take this info and create map
+
+plot_pop <- function(pop, y_0, y_n, shape, n_lists){
+  # This function takes in inputs of population size (pop),
+  #    Highest Inclusion Probability (y_0)
+  #    Lowest Inclusion Probabiliy (y_n)
+  #    The shape of the line (can be concave up or down, or line)
+  #    The number of lists to generate
+  
+  # This function outputs a square grid plot of the population
+  # Takes subsets of the population and visualises how often each person gets 'captured'
+  
+  # Population must be multiple of 100 to keep aspect ratio of grid
+  if (pop %% 100 != 0) {
+      return('ERROR! Must be multiple of 100')
+  }
+  
+  # Generate data for each individual
+  x <- seq(1/pop,1,1/pop)
+  x_n <- 1
+  y <- (y_n - y_0)/(x_n^2) * x^shape + y_0
+  df <- data.frame(x = x, y = y)
+  
+  for (i in 1:n_lists){
+    df[,paste("list",i,sep='')] <- rbinom(pop, 1, y)
+  }
+  
+  df <- df %>%
+    dplyr::select(-c(x,y))
+  
+  count <- rowSums(df)
+  
+  factors <- get_factors(pop)
+  
+  if (length(factors) %% 2 == 0){
+    y_len <- factors[length(factors)/2]
+    x_len <- factors[length(factors)/2 + 1]
+  } else {
+    y_len <- factors[length(factors)/2 + .5]
+    x_len <- factors[length(factors)/2 + .5]
+  }
+  
+  sup_x <- 50 * x_len
+  sup_y <- 50 * y_len
+  
+  grid <- expand.grid(y = seq(0, sup_y, length = y_len),
+                      x = seq(0, sup_x, length = x_len)) %>% as_tibble()
+  grid$count <- count
+  
+  ggplot(data = grid, mapping = aes(x = x/max(x), y = y, 
+                                    color = count, alpha = count)) + 
+    geom_point() + 
+    theme(aspect.ratio=1, 
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank(),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank()) + 
+    labs(title = "List Inclusion Probability over List Intersection for Individuals", 
+         x = 'Grid of Population (Highest to Lowest Incl. Pr.)', y = '')
+}
+
+main_p <- plot_pop(pop = 1000, y_0 = .05, y_n = .01, shape = 2, n_lists = 5)
+
+plot_pop(pop = 5000, y_0 = .05, y_n = .01, shape = 2, n_lists = 5)
+# Now need to overlay the distribution of inclusion probability 
+```
+
+```{r George Cow Plot, eval = F, echo = F}
+library(cowplot)
+xy_df <- function(pop, y_0, y_n, shape, n_lists){
+  require(dplyr)
+  x <- seq(1/pop,1,1/pop)
+  x_n <- 1
+  y <- (y_n - y_0)/(x_n^2) * x^shape + y_0
+  df <- data.frame(x = x, y = y)
+  return(df)
+}
+
+new_p <- xy_df(10000, .8, .1, 2, 5)
+xdens <- axis_canvas(main_p, axis = 'x', ylim = c(0, max(new_p$y))) +
+  geom_line(data = new_p, aes(x = x, y = y), linetype = 2, color = 'red')
+p1 <- insert_xaxis_grob(main_p, xdens, grid::unit(.2, 'null'), position = 'top')
+
+ggdraw(p1)
+ggdraw(xdens)
+ggplot() + geom_line(data = new_p, aes(x = x, y = y), alpha = 0.6)
+```
+
+
+```{r CORR, eval = FALSE, echo=F}
+# Correlation Function. FAILS WHEN P,Q are close to 0 and negative correlation.....
+
+a <- function(rho, p, q) {
+  rho * sqrt(p*q*(1-p)*(1-q)) + (1-p)*(1-q)
+}
+
+corr_cols <- function(pop, y_0, y_n, shape, n_lists, corr){
+  df <- generate_incl_prob(pop, y_0, y_n, shape)
+  print(df)
+  if(n_lists > 1){
+    for(i in 1:pop){
+      a.0 <- a(corr, df[i,'prob'], df[i,'prob'])
+      prob <- c(`(0,0)`= a.0, 
+                `(1,0)`= 1 - df[i, 'prob'] - a.0, 
+                `(0,1)`= 1- df[i,'prob'] - a.0,
+                `(1,1)`= a.0 + 2*df[i,'prob'] - 1)
+      x_y <- sample.int(4, 1, replace=TRUE, prob=prob)
+      df[i,'list1'] <- floor((x_y - 1)/2)
+      df[i,'list2'] <- 1 - x_y %% 2
+    }
+  } else {
+    df$list1 <- rbinom(pop, 1, df$prob)
+  }
+  
+  if(n_lists > 3){
+    for(i in 3:n_lists){
+      df[,paste("list",i,sep='')] <- rbinom(pop, 1, df$prob)
+    }
+  }
+  
+  df <- df %>%
+    dplyr::select(-c(person,prob))
+  
+  df$count <- rowSums(df)
+  df$pop <- pop
+  
+  return(df)
+  
+}
+
+
+tempp <- corr_cols(1000, .8, .5, 2, 5, -.8)
+
+cor(tempp$list1, tempp$list2)
+
+df <- generate_incl_prob(1000, .08, .05, 2)
+
+a.0 <- a(-.8, .02, .02)
+prob <- c(`(0,0)`= a.0, 
+                `(1,0)`= 1 - df[1, 'prob'] - a.0, 
+                `(0,1)`= 1- df[1,'prob'] - a.0,
+                `(1,1)`= max(a.0 + 2*df[1,'prob'] - 1,0))
+x_y <- sample.int(4, 1, replace=TRUE, prob=prob)
+x_y
+prob
+
+p <- .0001
+q <- .0001
+rho <- -1/5
+#
+# Compute the four probabilities for the joint distribution.
+#
+a.0 <- a(rho, p, q)
+prob <- c(`(0,0)`=a.0, `(1,0)`=1-q-a.0, `(0,1)`=1-p-a.0, `(1,1)`=a.0+p+q-1)
+```
