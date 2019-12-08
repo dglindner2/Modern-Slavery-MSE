@@ -40,6 +40,8 @@ extract_dataset <- function(dataset){
     stop("dataset must be either a string referring to a data frame or a data frame.")
   }
   
+  colnames(data1)[ncol(data1)] <- "count"
+  
   return(data1)
 }
 ```
@@ -63,7 +65,7 @@ combine_lists <- function(dataset, listname1, listname2){
   
   listnames <- list_choices(dataset)
   
-  if(!(listname1 %in% listnames | listname2 %in% listnames)){
+  if(!(listname1 %in% listnames & listname2 %in% listnames)){
     stop(paste0("listname1 and listname2 must be two columns within ", dataset))
   }
   
@@ -73,13 +75,13 @@ combine_lists <- function(dataset, listname1, listname2){
   combined_listname <- paste(listname1, listname2, sep="_")
   names(combined_list) <- combined_listname
   
-  dataset_combined <- cbind(dataset[,listnames_keep], combined_list, dataset$Frequency)
+  dataset_combined <- cbind(dataset[,listnames_keep], combined_list, dataset[ncol(dataset)])
   
-  colnames(dataset_combined) <- c(listnames_keep, combined_listname, "Frequency")
+  colnames(dataset_combined) <- c(listnames_keep, combined_listname, "count")
   
   dataset_grouped <- dataset_combined %>%
-    group_by_at(colnames(dataset_combined)[!grepl("Frequency", colnames(dataset_combined))]) %>%
-    summarize(Frequency = sum(Frequency))
+    group_by_at(colnames(dataset_combined)[!grepl("count", colnames(dataset_combined))]) %>%
+    summarize(count = sum(count))
   
   return(dataset_grouped)
 }
@@ -94,11 +96,11 @@ remove_list <- function(dataset, listname){
     stop(paste0("listname must be a column within ", dataset))
   }
   
-  search_string <- paste(listname, "Frequency", sep="|")
+  search_string <- paste(listname, "count", sep="|")
   
   dataset_grouped <- dataset %>%
     group_by_at(colnames(dataset)[!grepl(search_string, colnames(dataset))]) %>%
-    summarize(Frequency = sum(Frequency))
+    summarize(count = sum(count))
   
   return(dataset_grouped)
 }
