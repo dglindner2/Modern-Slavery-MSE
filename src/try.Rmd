@@ -32,21 +32,12 @@ UKdat_4
 ```
 ```{r}
 model <- MSEfit(UKdat_4)
-
-Y = simulate(model$fit, nsim=100)
-X = model.matrix(model$fit)
-
-
-
-glm(Y[,1] ~ -1 + X, family=poisson)
-
-
 ```
 
 ```{r}
 
 simulate_data <- function(fitted, nsim, n_lists) {
-  Y = simulate(fitted, nsim=100)
+  Y = simulate(fitted, nsim=nsim)
   mat = model.matrix(fitted)
   
   # Binary table with all combinations of zeros and ones
@@ -62,7 +53,7 @@ simulate_data <- function(fitted, nsim, n_lists) {
 }
 
 true_abondance = model$CI[1]
-nsim = 20
+nsim = 120
 n_lists = 4
 
 dat = simulate_data(model$fit, nsim=nsim, n_lists=n_lists)
@@ -70,10 +61,10 @@ simulation_names = paste0("sim_", 1:nsim)
 list_names = paste0("list", 1:n_lists)
 
 
-estimates = data.frame(mclapply(simulation_names, function(sim) {
+estimates = unlist(mclapply(simulation_names, function(sim) {
   MSEfit(dat[, c(paste0("list", 1:4), sim)])$CI[1]
 }, 
-mc.cores = 2))
+mc.cores = 12))
 ```
 
 ```{r}
@@ -83,59 +74,6 @@ abline(v=model$CI[2], lty=2)
 abline(v=model$CI[3], lty=2)
 ```
 
-```{r}
-est_A <- rpois(1000, )
-ones <- c() 
-zeros <- c() 
-for (est in est_A){ 
-  samp <- rpois(,est) 
-  zeros <- c(zeros, length(samp[samp==0])) 
-  ones <- c(ones, length(samp[samp==1])) 
-} 
-plot(zeros, ones, ylim=c()) 
-points(, col = "red")
 
-```
-
-
-```{r}
-UK.full <- data.frame()
-
-for(i in 1:length(UKdat[,1])){
-LA = rep(x=UKdat[i,1], times = as.numeric(UKdat$count[i]))
-NG = rep(x=UKdat[i,2], times = as.numeric(UKdat$count[i]))
-PF = rep(x=UKdat[i,3], times = as.numeric(UKdat$count[i]))
-GO = rep(x=UKdat[i,4], times = as.numeric(UKdat$count[i]))
-GP = rep(x=UKdat[i,5], times = as.numeric(UKdat$count[i]))
-NCA= rep(x=UKdat[i,6], times = as.numeric(UKdat$count[i]))
-
-col= cbind(LA, NG, PF, GO, GP, NCA)
-
-UK.full <- rbind(UK.full, col)
-}
-```
-
-
-```{r}
-estimation <- list()
-for(i in 1 : 10000)
-samp <- UK.full[sample(nrow(UK.full), 500, replace = TRUE), ]
-samp <- count.dups(samp) 
-fit = MSEfit(samp)
-estimation <- 
-}
-
-
-
-# a far simpler `data.table` approach
-library(data.table)
-count.dups <- function(DF){
-
-  DT <- data.table(DF)
-  DT[,.N, by = names(DT)]
-}
-count.dups(samp)
-
-```
 
 

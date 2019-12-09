@@ -1,0 +1,36 @@
+---
+title: "summary"
+author: "Pierre Gardan"
+date: "12/8/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+  In this tab, we assess the reliability of Silverman's MSE approach through bootstrap simulations.
+  
+  Estimates of the number of victims of modern trafficking derived by Silverman and his colleagues have been widely used by entities of the U.K. government. It is therefore important to ensure their reliability.  
+  
+  Silverman developped an R package called "moderslavmse" (2018) containing the function "MSEfit" that uses the M.S.E method employed in his original paper from where these estimates are from.  
+  
+  
+  We first reproduce Silverman's models using the function "MSEfit" and the three UK datasets with 6,5 and 4 lists. These are log-linear modeld using a stepwise approach on up to two way interactions and having the form:
+  $N_A \sim  Poisson(\exp{( \underbrace{\mu}_{\textit{Intercept}} + \underbrace{\beta_1+ \beta_2 +...+\beta_i}_{\textit{Main Effects}} + \underbrace{\lambda_12 +...+\lambda_ij}_{\textit{Interractions}})})$  
+  
+  The second step is to generate simulated datasets From each model. In this analysis, we generate 1,200 simulations for every model. Then, using "MSEfit", we fit a new model on each one of these new datasets and extract their estimates. These are plotted in Figures A, B and C.
+  
+  Figure A. shows the estimates generated using 4 lists (dataset UKdat_4). We can visually see that even though a majority of the the generated estimates is captured by Silverman's model, we are not quite close to 95% coverage. Indeed, the coverage is %.
+  
+  ##Insert FIG A
+  
+  Figure B and C represent the generated data for 5 and 6 lists respectively(UKdat_5 and UKdat). One can observe that the coverage drops significantly compared to the previous example. Here, the coverages are only % and %. Adding lists seems to add some instabillity in the genrative. The proximity between th model with 5 and 6 lists might be explained by the fact that UKdat_5 combines two lists from UKdat.   
+  
+  ##Insert B and C
+  
+  ## Insert summary table 
+  
+  Coverages derived from our generative models shows that Silverman's MSE method which does not use three way interactions and selects two way interactions with AIC produces confidence interval that are way too narrow. We can therefore truly question the reliability of this method to estimate the number of victims of modern slavery. 
