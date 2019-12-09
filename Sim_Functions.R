@@ -220,7 +220,7 @@ list_intersection <- function(pop, y_0, y_n, shape, n_lists, refer, remove){
   data <- refer_remove(pop, y_0, y_n, shape, n_lists, refer, remove)
   p <- ncol(data) - 1
   df <- data %>% group_by_at(paste0("list", 1:p)) %>% count() 
-  df <- df[-1,] %>% arrange(desc(n))
+  df <- df %>% arrange(desc(n))
   return(df)
 }
 
