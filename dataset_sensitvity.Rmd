@@ -100,11 +100,16 @@ create_dataset <- function(dataset, lists){
   #remove empty lists
   lists <- lists[unlist(lapply(lists, length))>0]
   
+  #extract original data
+  data <- extract_dataset(dataset) 
+  
+  if(length(lists)==0){
+    return(data)
+  }
+  
   #extract full versions of each list
   df_list <- lapply(lists, function(i){combine_lists(dataset, i, remove_orig_groups = FALSE)})
-  
-  #extract original data
-  data <- extract_dataset(dataset)  
+
   #merge full versions of each new list
   data_new <- reduce(df_list, inner_join, by=colnames(data))
   
