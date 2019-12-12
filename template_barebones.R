@@ -11,6 +11,7 @@ library(MCMCpack)
 library(Rcapture)
 library(LCMCR)
 library(UpSetR)
+library(DT)
 source("input/silverman_code/datasets.R")
 source("input/silverman_code/functions.R")
 
@@ -57,14 +58,14 @@ combine_lists <- function(dataset, listnames, remove_orig_groups=TRUE){
     stop(paste0("all list names must be columns within ", dataset))
   }
   
-  if(remove_orig_groups){
+  if(remove_orig_groups | length(listnames)<= 1){
     listnames_keep <- listname_opts[!(listname_opts %in% listnames)]
   }
   else{
     listnames_keep <- listname_opts
   }
   
-  data_comblists <- dataset[,listnames]
+  data_comblists <- as.data.frame(dataset[,listnames])
   
   combined_list <- as.data.frame(ifelse(rowSums(data_comblists), 1, 0))
   combined_listname <- paste(listnames, collapse="_")
@@ -83,18 +84,34 @@ combine_lists <- function(dataset, listnames, remove_orig_groups=TRUE){
 }
 
 create_dataset <- function(dataset, lists){
+  
+  #remove empty lists
+  lists <- lists[unlist(lapply(lists, length))>0]
+  
+  #extract full versions of each list
   df_list <- lapply(lists, function(i){combine_lists(dataset, i, remove_orig_groups = FALSE)})
   
+  #extract original data
   data <- extract_dataset(dataset)  
+  #merge full versions of each new list
   data_new <- reduce(df_list, inner_join, by=colnames(data))
   
-  joining_cols <- colnames(data)[!grepl("count", colnames(data))]
-  unique_cols <- setdiff(unique(unlist(map(df_list, colnames))),
-                         colnames(data))
+  #find the columns to be added, and based on the old and new datasets
+  listvar_lengths <- unlist(lapply(lists, length))
+  indices_1 <- which(listvar_lengths==1)
+  unique_cols1 <- unlist(lapply(indices_1, function(i){lists[[i]]}))
+  unique_cols2 <- setdiff(unique(unlist(map(df_list, colnames))),
+                          colnames(data))
+  unique_cols <- c(unique_cols1, unique_cols2)
   
+  nonselect_cols1 <- colnames(data)[!grepl("count", colnames(data))]
+  nonselect_cols <- setdiff(nonselect_cols1, unique_cols1)
+  
+  
+  #group and update counts appropriately
   data_grouped <- data_new %>%
     ungroup() %>%
-    dplyr::select(-one_of(joining_cols)) %>%
+    dplyr::select(-one_of(nonselect_cols)) %>%
     group_by_at(unique_cols) %>%
     summarize(count = sum(count))
   
@@ -156,7 +173,8 @@ ui <- fluidPage(
                div(align="right",
                    actionButton(inputId = "create_data", label="Create Customized Dataset"))),
              mainPanel(
-               plotOutput(outputId = "MSE_plot"))),
+               plotOutput(outputId = "MSE_plot"),
+               tableOutput(outputId = "MSE_CI"))),
     
     tabPanel("Generative Model Types"),
     
@@ -189,6 +207,9 @@ server <- function(input, output, session){
                     matrix.color = "cornflowerblue",
                     mainbar.y.label = "Potential victims count",
                     sets.x.label = "")
+  )
+  output$MSE_CI <- renderTable(
+    MSEfit(updated_dataset())$CI
   )
 }
 
