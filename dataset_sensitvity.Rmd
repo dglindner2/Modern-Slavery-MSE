@@ -60,23 +60,31 @@ list_choices <- function(dataset){
 ```
 
 ```{r combine_delete_lists}
-combine_lists <- function(dataset, listname1, listname2){
+combine_lists <- function(dataset, listnames, remove_orig_groups=TRUE){
   
   dataset <- extract_dataset(dataset)
   
-  listnames <- list_choices(dataset)
+  listname_opts <- list_choices(dataset)
   
-  if(!(listname1 %in% listnames & listname2 %in% listnames)){
-    stop(paste0("listname1 and listname2 must be two columns within ", dataset))
+  if(sum(listnames %in% listname_opts) != length(listnames)){
+    stop(paste0("all list names must be columns within ", dataset))
   }
   
-  listnames_keep <- listnames[!(listnames %in% c(listname1, listname2))]
+  if(remove_orig_groups){
+    listnames_keep <- listname_opts[!(listname_opts %in% listnames)]
+  }
+  else{
+    listnames_keep <- listname_opts
+  }
   
-  combined_list <- ifelse(as.numeric(dataset[,listname1]) + as.numeric(dataset[,listname2]), 1, 0)
-  combined_listname <- paste(listname1, listname2, sep="_")
-  names(combined_list) <- combined_listname
+  data_comblists <- dataset[,listnames]
+  
+  combined_list <- as.data.frame(ifelse(rowSums(data_comblists), 1, 0))
+  combined_listname <- paste(listnames, collapse="_")
+  colnames(combined_list) <- combined_listname
   
   dataset_combined <- cbind(dataset[,listnames_keep], combined_list, dataset[ncol(dataset)])
+  
   
   colnames(dataset_combined) <- c(listnames_keep, combined_listname, "count")
   
@@ -86,6 +94,26 @@ combine_lists <- function(dataset, listname1, listname2){
   
   return(dataset_grouped)
 }
+
+create_dataset <- function(dataset, lists){
+  df_list <- lapply(lists, function(i){combine_lists(dataset, i, remove_orig_groups = FALSE)})
+
+  data <- extract_dataset(dataset)  
+  data_new <- reduce(df_list, inner_join, by=colnames(data))
+
+  joining_cols <- colnames(data)[!grepl("count", colnames(data))]
+  unique_cols <- setdiff(unique(unlist(map(df_list, colnames))),
+                         colnames(data))
+
+  data_grouped <- data_new %>%
+    ungroup() %>%
+    dplyr::select(-one_of(joining_cols)) %>%
+    group_by_at(unique_cols) %>%
+    summarize(count = sum(count))
+
+  return(data_grouped)
+}
+
 
 remove_list <- function(dataset, listname){
   
@@ -126,7 +154,7 @@ plot_MSE_counts(UKdat,
                 mainbar.y.label = "Potential victims count",
                 sets.x.label = "")
 
-plot_MSE_counts(combine_lists(UKdat, "PF", "LA"), 
+plot_MSE_counts(combine_lists(UKdat, c("PF", "LA")), 
                 # empty.intersections=T,
                 sets.bar.color = "cornflowerblue",
                 main.bar.color = "cornflowerblue",
