@@ -161,5 +161,16 @@ plot_MSE_counts(combine_lists(UKdat, c("PF", "LA")),
                 matrix.color = "cornflowerblue",
                 mainbar.y.label = "Potential victims count",
                 sets.x.label = "")
+
+
+plot_MSE_counts(create_dataset(UKdat, list(c("PF", "LA"), 
+                                           c("LA", "GO", "GP"))), 
+                # empty.intersections=T,
+                sets.bar.color = "cornflowerblue",
+                main.bar.color = "cornflowerblue",
+                matrix.color = "cornflowerblue",
+                mainbar.y.label = "Potential victims count",
+                sets.x.label = "")
+
 ```
 
