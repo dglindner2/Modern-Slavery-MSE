@@ -23,11 +23,11 @@ knitr::opts_chunk$set(echo = TRUE)
   
   The second step is to generate simulated datasets From each model. In this analysis, we generate 1,200 simulations for every model. Then, using "MSEfit", we fit a new model on each one of these new datasets and extract their estimates. These are plotted in Figures A, B and C.
   
-  Figure A. shows the estimates generated using 4 lists (dataset UKdat_4). We can visually see that even though a majority of the the generated estimates is captured by Silverman's model, we are not quite close to 95% coverage. Indeed, the coverage is %.
+  Figure A. shows the estimates generated using 4 lists (dataset UKdat_4). We can visually see that even though a majority of the the generated estimates is captured by Silverman's model, we are not quite close to 95% coverage. Indeed, the coverage is 81.25%.
   
   ##Insert FIG A
   
-  Figure B and C represent the generated data for 5 and 6 lists respectively(UKdat_5 and UKdat). One can observe that the coverage drops significantly compared to the previous example. Here, the coverages are only % and %. Adding lists seems to add some instabillity in the genrative. The proximity between th model with 5 and 6 lists might be explained by the fact that UKdat_5 combines two lists from UKdat.   
+  Figure B and C represent the generated data for 5 and 6 lists respectively(UKdat_5 and UKdat). One can observe that the coverage drops significantly compared to the previous example. Here, the coverages are only 46.75% and 52.75%. Adding the General Public list (from 4 to 5 lists)clearly add some instabillity in the genrative model. Combining, the police forces (PF) and the NCA lists seem to have the same effect (from 6 to 5 lists).   
   
   ##Insert B and C
   
