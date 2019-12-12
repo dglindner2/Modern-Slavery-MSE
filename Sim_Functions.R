@@ -10,7 +10,7 @@ library(Rcapture)
 library(LCMCR)
 library(tidyverse)
 library(UpSetR)
-
+library(resample)
 
 MSEfit <- function(zdat = UKdat,
                    mainonly = F,
@@ -76,6 +76,8 @@ MSEfit <- function(zdat = UKdat,
   return(MSEretconf(zdat, zfit, mXform, returnfit))
 }
 
+resample <- function(x, ...) x[sample.int(length(x), ...)]
+
 
 MSEretconf <-
   function (zdat, zfit, mX, retfit)
@@ -119,7 +121,7 @@ MSE_hist <- function(data, pop, nsims){
     labs(x = "MSE Estimate of Population", y = "Frequency", 
          caption = paste("Simulation is based on", nsims, "replications"), title = "") +
     theme_bw(base_size = 10) +
-    geom_vline(aes(xintercept = pop), color = 'red', linetype = 2)
+    geom_vline(aes(xintercept = pop), color = 'red', linetype = 2, size = 1.01)
 }
 
 inclusion <- function(pop, y_0, y_n, shape){

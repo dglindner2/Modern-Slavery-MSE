@@ -1,5 +1,6 @@
 library(shiny)
 library(tidyverse)
+library(shinycssloaders)
 source("Sim_Functions.R")
 
 ui <- fluidPage(
@@ -25,12 +26,18 @@ ui <- fluidPage(
         sliderInput(inputId = "removal", label = "List Removal Probability", 
                     min = 0, max = 100, value = 0, step = 1, ticks = F, post = '%'),
         sliderInput(inputId = "sims", label = "Number of Simulations to Run", 
-                    min = 100, max = 10000, value = 1000, step = 50, ticks = F),
+                    min = 50, max = 1000, value = 100, step = 50, ticks = F),
         actionButton("run_sim", "Run"),
         br(),
-        plotOutput(outputId = 'inc_plot')),
-      mainPanel(plotOutput(outputId = "count_plot"),
-                plotOutput(outputId = "sim_plot"))
+        br(),
+        plotOutput(outputId = 'inc_plot') %>% withSpinner(type = getOption("spinner", default = 1),
+                                                          color = getOption("spinner.color", default = "black"))),
+     
+       mainPanel(h3(textOutput("list_text")), plotOutput(outputId = "count_plot") %>% withSpinner(),
+                
+                h3(textOutput("plot_text")), plotOutput(outputId = "sim_plot") %>% withSpinner(type = getOption("spinner", default = 2),
+                                                                  color = getOption("spinner.color", default = "#8dd3c7"),
+                                                                  color.background = getOption('spinner.color.background', default = 'white')))
     )),
     tabPanel("Overall Summary")
     
@@ -81,7 +88,9 @@ server <- function(input, output, session){
       sidebar_plot()
     )
     
-    MSEcount_plot <- reactive({plot_MSE_counts(refer_remove(
+    MSEcount_plot <- reactive({
+      
+      plot_MSE_counts(refer_remove(
       N(), y_high(), y_low(), Shape(), Lists(), Ref(), Rem()), 
       sets.bar.color = "cornflowerblue",
       main.bar.color = "cornflowerblue",
@@ -93,14 +102,29 @@ server <- function(input, output, session){
       MSEcount_plot()
     )
     
-    MSEsim_plot <- reactive({MSEFixed_plot(N(), y_high(),
-                                           y_low(), Shape(),
-                                           Lists(), Ref(), Rem(), Sims())})
+    MSEsim_plot <- reactive({
+      MSEFixed_plot(N(), y_high(),y_low(), Shape(),Lists(), Ref(), Rem(), Sims())
+      })
     
     output$sim_plot <- renderPlot(
       MSEsim_plot()
     )
   
+    list_plot_title <- eventReactive(input$run_sim, {
+      print("           List Intersection Plot")
+    })
+    
+    output$list_text <- renderText(
+      list_plot_title()
+    )
+    
+    mse_plot_title <- eventReactive(input$run_sim, {
+      print("Simulation of MSE Accuracy")
+    })
+    
+    output$plot_text <- renderText(
+      mse_plot_title()
+    )
 }
 
 
