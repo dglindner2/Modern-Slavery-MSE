@@ -81,7 +81,7 @@ knitr::kable(UKdat) %>%
 
 This data is also plotted below, showing the counts for all observed inclusion patterns.
 
-```{r}
+```{r fig.align="center"}
 plot_MSE_counts <- function(data, ...) {
   n = ncol(data) - 1
   dat = uncount(data[, 1:n], data$count)
@@ -95,21 +95,24 @@ plot_MSE_counts(UKdat,
                 mainbar.y.label = "Potential victims count",
                 sets.x.label = "")
 ```
-
-## Underlying assumptions
+ 
+## 2.1. Underlying assumptions
 
 In its simplest form, MSE makes a number of assumptions:
 
 1. *Independence:* the lists are independent from one another.
+
 2. *Homogeneity:* on a given list, all the individuals have the same probability of being recorded.
+
 3. *Closed population:* the population size does not change during the study.
+
 4. *Perfect matching:* the overlap between lists is computed without any error.
 
 These are very restrictive and unlikely to be satisfied in reality. Fortunately, we can account for dependence between the lists by also modelling and estimating interaction terms. This is done through the use of a log-linear model with interactions terms.
 
-## Log-linear model
+## 2.2. Log-linear model
 
-Precisely, for every lists subset $A \subset \{\text{LA}, \text{NG}, \text{PF}, \text{GO}, \text{GP}, \text{NCA}\}$, we model the count $N_A$ of individuals observed on lists in $A$ and on no other lists as
+Precisely, for every lists subset $A \subset \{\text{LA}, \text{NG}, \text{PF}, \text{GO}, \text{GP}, \text{NCA}\}$, the counts $N_A$ of individuals observed on lists in $A$ and on no other lists are modelled as
 $$
   N_A \sim \text{Poisson}\left(\exp\left( \mu + \sum_{i \in A} \alpha_i + \sum_{i,j\in A,\,i\not = j} \lambda_{i,j} \right)\right).
 $$
@@ -120,11 +123,30 @@ $$
 
 This log-linear Poisson count model is an approximation to a multinomial model and the parameters can be interpreted in term of joint list inclusion probabilities, although this level of detail is not necessary for our purpose.
 
-## Silverman's (2014) `MSEfit` function
+## 2.3. Silverman's (2014) `MSEfit` function
 
+As the basis of UK's Home Office 10,000 to 13,000 potential victims estimate, Silverman (2014) merged together the NCA and PF lists, and fitted the Poisson log-linear model, selecting list interaction terms to be including through stepwise AIC model selection. They reported the confidence interval corresponding to the model fit with the selected interaction terms.
 
+This procedure is implemented in the `MSEfit` function provided by [Silverman (2019)](https://arxiv.org/abs/1902.06078).
+
+```{r}
+MSEfit(UKdat_5)$CI
+```
+ 
+The **abundance** represents the estimated count of potential victims, and the two other numbers are respectively the lower and upper confidence limits.
 
 # 3. Benchmark {.tabset}
+
+There are a number of potential issues with Silverman's `MSEfit` method. Some of these have been investigated in Silverman (2019) and Whitehead et al. (2019), and others we also consider in our benchmark.
+
+First, Silverman (2019) has shown some instabilities of the estimates to operations such as merging and omitting lists. The **data manipulation** section of our benchmark allows the user to merge and omit lists in any way, seeing the effect on the patterns of inclusion and on the MSE estimates.
+
+Second, we study the coverage of Silverman's `MSEfit` method in a parametric bootstrap. For three different datasets, the `UKdat` data with all six lists, the `UKdat_5` data merging the PF and NCA lists, and the `UKdat_4` data obtained by merging PF and NCA, and omitting the GP list. We limited the number of datasets to allow us to precompute the simulations. Otherwise, since the `MSEfit` function is quite slow, the simulations can take up to many hours to run.
+
+Third, we consider simulated data where the user is allowed to modify the true population size, the lists inclusion probabilities, the probability of an individual being "scooped" by one of the list and not found by any other, and the probability of an individual being referred by one of the list to another. The *Inclusion Probability* parameters allows the user to experiment with non-homogeneous list inclusion probabilities.
+
+**Usage recommentation:** Please allow one minute for the first plot to appear, before begining interacting with the application.
+
 
 ## Data manipulation
 
@@ -136,6 +158,10 @@ shinyAppFile("data_application/shiny.R", options = list(
 
 ## Bootstrap simulation
 
+This tab assesses the reliability of Silverman's MSE approach through bootstrap simulations. Silverman developped an R package called "moderslavmse" (2018) to reproduce the MSE method used in his original paper (stepwise assuming only to way interactions). Here, We first reproduce Silverman's model on either of the three UK datasets. From this model, we generate datasets on which we fit new models with the same method. We finally plot estimates extracted from each simulated model and display coverage based on  [Silverman et al. (2015)](https://rss.onlinelibrary.wiley.com/doi/full/10.1111/j.1740-9713.2015.00824.x) in a table. Note: By clicking the "use pre-processed data" box, the user has the possibility to generate faster results using pre-processed simulations.
+We can observe low coverage, especially when dealing with six or five lists, which shows that Confidence interval produced might be too narrow. This low coverage and the instability of the model question the reliability of the MSE method used by Silverman to estimate the number of victims of modern slavery.
+
+
 ```{r}
 shinyAppFile("simulation/shiny2.R", options = list(
     width = "100%", height = 550
@@ -143,6 +169,13 @@ shinyAppFile("simulation/shiny2.R", options = list(
 ```
 
 ## Generative models
+
+Multiple systems estimation makes two key assumptions: that each individual has an equal probability of being caught, and that each list is independent of each other. However, when considering the task at hand, these assumptions will not necessarily be met. Modern slavery is a broad term, and some forms of slavery are more exposed to the public than others. The probability of being found certainly varies depending on the individual’s situation. Furthermore, an observed individual will likely not be released back into their situation. They have been rescued from slavery and will not be captured again by another list. Correlation between lists can occur both when an individual is observed and removed from their situation altogether and when lists share information about observed individuals with each other.
+
+This tab provides the opportunity 
+
+We see that MSE provides an accurate estimate of a simulated population when inclusion probability is constant across the population and there is no referral or removal between lists. However, when we induce correlation between the lists or change the inclusion probabilities across the population, the MSE estimates break down. This simulation study suggests that in our context of quantifying modern slavery, multiple systems estimation is not an appropriate method.
+
 
 ```{r}
 shinyAppFile("generative/shiny.R", options = list(
