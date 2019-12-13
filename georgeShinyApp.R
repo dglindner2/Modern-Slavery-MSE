@@ -103,15 +103,19 @@ server <- function(input, output, session){
     )
     
     MSEsim_plot <- reactive({
-      MSEFixed_plot(N(), y_high(),y_low(), Shape(),Lists(), Ref(), Rem(), Sims())
+      show_condition(MSEFixed_plot(N(), y_high(),
+                                   y_low(), Shape(),Lists(),
+                                   Ref(), Rem(), Sims()))
       })
+    
     
     output$sim_plot <- renderPlot(
       MSEsim_plot()
     )
+    
   
     list_plot_title <- eventReactive(input$run_sim, {
-      print("           List Intersection Plot")
+      print("List Intersection Plot")
     })
     
     output$list_text <- renderText(

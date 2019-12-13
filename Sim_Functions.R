@@ -116,12 +116,13 @@ plot_MSE_counts <- function(data, ...) {
 
 MSE_hist <- function(data, pop, nsims){
   require(ggplot2)
-  ggplot(data, mapping = aes(x = est)) + 
-    geom_histogram(bins = 22, color = "black", fill = "#8dd3c7") +
-    labs(x = "MSE Estimate of Population", y = "Frequency", 
-         caption = paste("Simulation is based on", nsims, "replications"), title = "") +
-    theme_bw(base_size = 10) +
-    geom_vline(aes(xintercept = pop), color = 'red', linetype = 2, size = 1.01)
+  tryCatch(ggplot(data, mapping = aes(x = data[,1])) + 
+             geom_histogram(bins = 22, color = "black", fill = "#8dd3c7") +
+             labs(x = "MSE Estimate of Population", y = "Frequency", 
+                  caption = paste("Simulation is based on", nsims, "replications"), title = "") +
+             theme_bw(base_size = 10) +
+             geom_vline(aes(xintercept = pop), color = 'red', linetype = 2, size = 1.01), error = function(e) 
+               {print("Error in plotting Histogram")})
 }
 
 inclusion <- function(pop, y_0, y_n, shape){
@@ -228,9 +229,9 @@ list_intersection <- function(pop, y_0, y_n, shape, n_lists, refer, remove){
 
 MSEFixed_plot <- function(pop, y_0, y_n, shape, n_lists, refer, remove, nsims){
   
-  EST <- data.frame(est = replicate(nsims, expr = {
+  EST <- tryCatch(data.frame(est = tryCatch(replicate(nsims, expr = {
     df <- list_intersection(pop, y_0, y_n, shape, n_lists, refer, remove)
-    closedpCI.t(df, dfreq = T, mX = ~ 1 + .)$CI[1]}))
+    closedpCI.t(df, dfreq = T, mX = ~ 1 + .)$CI[1]}), error = function(e) "Error 3")), error = function(e) "Error 2")
   
   MSE_hist(EST, pop, nsims)
   
@@ -245,5 +246,14 @@ MSEfit_plot <- function(pop, y_0, y_n, shape, n_lists, refer, remove, nsims){
   
   MSE_hist(EST, pop, nsims)
   
+}
+
+show_condition <- function(code) {
+  tryCatch(code,
+           error = function(c) "MSE Estimation could not be 
+           computed under these parameters
+           due to insufficient list intersection. 
+           Try lowering List Removal Probability."
+  )
 }
 
