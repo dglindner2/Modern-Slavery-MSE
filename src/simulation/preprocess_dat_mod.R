@@ -57,7 +57,7 @@ simulation <- function( dataset, nsim = "1200"){
   
   estimates = unlist(mclapply(simulation_names, function(sim) {
     MSEfit(dat[, c(paste0("list", 1:n_lists), sim)])$CI[1]
-  }, 
+  },
   mc.cores = 12))
 }
 

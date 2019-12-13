@@ -1,4 +1,5 @@
 library(shiny)
+library(shinycssloaders)
 
 library(knitr)
 # install.packages("kableExtra")
@@ -138,52 +139,55 @@ col_choices <- colnames(UKdat)[colnames(UKdat)!="count"]
 
 
 ui <- fluidPage(tabPanel("Real Data Sensitivities",
-             titlePanel("Real Data Sensitivity"),
              fluidRow(
-               column(4,
+               column(2,
                       selectizeInput(inputId = "list1",
                                      label = "List 1",
                                      choices = col_choices,
                                      multiple = TRUE,
+                                     selected = col_choices[1],
                                      options = list(maxItems = 6))),
-               column(4,
+               column(2,
                       selectizeInput(inputId = "list2",
                                      label = "List 2",
                                      choices = col_choices,
                                      multiple = TRUE,
+                                     selected = col_choices[2],
                                      options = list(maxItems = 6))),
-               column(4,
+               column(2,
                       selectizeInput(inputId = "list3",
                                      label = "List 3",
                                      choices = col_choices,
                                      multiple = TRUE,
+                                     selected = col_choices[3],
                                      options = list(maxItems = 6))),
-             ),
-             fluidRow(
-               column(4,
+               column(2,
                       selectizeInput(inputId = "list4",
                                      label = "List 4",
                                      choices = col_choices,
                                      multiple = TRUE,
+                                     selected = col_choices[4],
                                      options = list(maxItems = 6))),
-               column(4,
+               column(2,
                       selectizeInput(inputId = "list5",
                                      label = "List 5",
                                      choices = col_choices,
                                      multiple = TRUE,
+                                     selected = col_choices[5],
                                      options = list(maxItems = 6))),
-               column(4,
+               column(2,
                       selectizeInput(inputId = "list6",
                                      label = "List 6",
                                      choices = col_choices,
                                      multiple = TRUE,
+                                     selected = col_choices[6],
                                      options = list(maxItems = 6))),
              ),           
              fluidRow(div(align="right",
                           actionButton(inputId = "create_data", label="Create Customized Dataset"))
              ),
              mainPanel(
-               plotOutput(outputId = "MSE_plot"),
+               plotOutput(outputId = "MSE_plot") %>% withSpinner(),
                tableOutput(outputId = "MSE_CI")))
 )
 
@@ -212,8 +216,12 @@ server <- function(input, output, session){
                     mainbar.y.label = "Potential victims count",
                     sets.x.label = "")
   )
-  output$MSE_CI <- renderTable(
-    MSEfit(updated_dataset())$CI
+  output$MSE_CI <- renderTable({
+    CI = MSEfit(updated_dataset())$CI
+    CI = CI[,1:3, drop=F]
+    colnames(CI) = c("Abundance", "Lwr", "Upr")
+    CI
+  }
   )
 }
 

@@ -22,7 +22,7 @@ ui <- fluidPage(
                           sliderInput(inputId = "removal", label = "List Removal Probability", 
                                       min = 0, max = 100, value = 0, step = 1, ticks = F, post = '%'),
                           sliderInput(inputId = "sims", label = "Number of Simulations to Run", 
-                                      min = 50, max = 1000, value = 100, step = 50, ticks = F),
+                                      min = 1, max = 200, value = 5, step = 1, ticks = F),
                           actionButton("run_sim", "Run"),
                           br(),
                           br(),

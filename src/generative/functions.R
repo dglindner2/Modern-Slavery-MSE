@@ -245,7 +245,6 @@ MSEfit_plot <- function(pop, y_0, y_n, shape, n_lists, refer, remove, nsims){
   ))
   
   MSE_hist(EST, pop, nsims)
-  
 }
 
 show_condition <- function(code) {

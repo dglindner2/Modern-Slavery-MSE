@@ -8,7 +8,7 @@ saveRDS(model6, file.path("src/simulation/model6.Rds"))
 model5 <- MSEfit(UKdat_5)
 saveRDS(model5, file.path("src/simulation/model5.Rds"))
 model4 <- MSEfit(UKdat_4)
-saveRDS(model4, file.path("src/simulation/model5.Rds"))
+saveRDS(model4, file.path("src/simulation/model4.Rds"))
 
 # save hist function
 plot.est <- function(dataset, estimates, n_lists, xlim, breaks){
