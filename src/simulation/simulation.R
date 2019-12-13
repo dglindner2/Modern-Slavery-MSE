@@ -1,5 +1,4 @@
 
-# install.packages(c("dga", "MCMCpack", "Rcapture", "LCMCR", "MASS", "coda"))
 source("src/simulation/models_functions.R")
 
 # Models with each dataset

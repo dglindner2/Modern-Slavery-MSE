@@ -1,8 +1,3 @@
-library(shiny)
-library(tidyverse)
-library(shinycssloaders)
-source("generative/functions.R")
-
 ui <- fluidPage(
              tabPanel("Generative Model Types", fluid = TRUE,   
                       sidebarLayout(

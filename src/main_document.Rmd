@@ -26,6 +26,8 @@ pacman::p_load("shiny", "shinycssloaders", "knitr", "kableExtra",
 
 source("../input/silverman_code/datasets.R")
 source("../input/silverman_code/functions.R")
+source("generative/functions.R")
+source("simulation/preprocess_dat_mod.R")
 ```
 
 # 1. Introduction

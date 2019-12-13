@@ -1,17 +1,5 @@
 # Functions for George's Tab
 
-library(dplyr)
-library(ggplot2)
-library(cowplot)
-library(kableExtra)
-library(dga)
-library(MCMCpack)
-library(Rcapture)
-library(LCMCR)
-library(tidyverse)
-library(UpSetR)
-library(resample)
-
 MSEfit <- function(zdat = UKdat,
                    mainonly = F,
                    pthresh = 0.05,

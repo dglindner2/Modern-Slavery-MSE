@@ -1,5 +1,3 @@
-source("simulation/preprocess_dat_mod.R")
-
 ui <- fluidPage(
              tabPanel("Coverage and CIs",
                       sidebarPanel(
