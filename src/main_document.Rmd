@@ -1,7 +1,7 @@
 ---
 title: "Benchmarking the accuracy of multiple systems estimation for the quantification of modern slavery"
-author: "The Pythonistas"
-date: '2019-12-09'
+author: "George Linder, Morris Greenberg, Pierre Gardan and Olivier Binette"
+date: 'December 14, 2019'
 runtime: shiny
 output:
   html_document:
@@ -20,7 +20,7 @@ output:
 
 # 1. Introduction
 
-Forty million people currently live in slavery, according to the International Labour Organization (ILO) most recent estimate [ref]. In other words, every 1 in 220 person worldwide is trapped in a situation of "forced labour, forced marriage, or under another form of exploitation that a person cannot refuse or leave because of threats, violence, coercion, deception and/or abuse of power". **Modern slavery** broadly refers to such forms of slavery that are currently happening. 
+Forty million people currently live in slavery, according to the International Labour Organization (ILO) most recent estimate [ref]. In other words, every 1 in 220 person worldwide is trapped in a situation of "forced labour, forced marriage, or under another form of exploitation that a person cannot refuse or leave because of threats, violence, coercion, deception and/or abuse of power". **Modern slavery** is an umbrella term which broadly refers to such forms of slavery that are currently happening. 
 
 The scale of the problem has prompted the United Nations to add, in 2015, the eradication of modern slavery as part of its [Sustainable Development Goals framework](https://sustainabledevelopment.un.org/). This calls for integrated action to end modern slavery and for the development of reliable statistical indicators. 
 
@@ -33,13 +33,13 @@ However, statistical methodology to estimate the number of undetected victims of
 
 ## 1.1. The case of the UK
 
-The United Kingdom's quantification of modern slavery, together with their Modern Slavery Act 2015, has drawn considerable attention to such efforts. Silverman (2014) estimated between 10,000 to 13,000 the number of potential victims in 2014, using a method called **Multiple Systems Estimation** (MSE). The method aggregates data from multiple sources such as the police and non-governmental organizations, and estimates the proportion of victims that have not been seen by any of them.
+The United Kingdom's quantification of modern slavery, together with their 2015 Modern Slavery Act, has drawn considerable attention to such efforts. Silverman (2014) estimated between 10,000 to 13,000 potential victims using a method called **Multiple Systems Estimation** (MSE). The method aggregates data from multiple sources, such as the police and non-governmental organizations, and estimates the proportion of victims that have not been seen by any of them.
 
-However, follow-up research has shown high sensitivity of the estimates to modelling assumptions, with the Walk Free Foundation providing a 10-fold larger estimate of about 135 000 victims and a recent analysis even suggesting to abandon attempts at measuring this hidden population. It is unclear if the assumptions underlying standard use of MSE were satisfied in Silverman's study and we are concerned by these developments. MSE methods are used in many sensitive human rights applications and their correct usage is critical to reach truth and maintain credibility. 
+However, follow-up research (Whitehead et al., 2019) has shown high sensitivity of the estimates to modelling assumptions, with the Walk Free Foundation providing a 10-fold larger estimate of about 135 000 victims and a recent analysis even suggesting to abandon attempts at measuring this hidden population. It is unclear if the assumptions underlying standard use of MSE were satisfied in Silverman's study and we are concerned by these developments. MSE methods are used in many sensitive human rights applications and their correct usage is critical to reach truth and maintain credibility. 
 
 ## 1.2. Our benchmark
 
-The goal of our benchmark is to look into the performance of the MSE method used by Silverman (2014) in application to the quantification of modern slavery. We provide some of the tools necessary to investigate the accuracy and stability of the estimates. More precisely, our tool allows to:
+We provide some of the tools necessary to investigate the accuracy and stability of MSE estimates in application to the quantification of modern slavery. Precisely, this interactive document (Section 3) allows to:
 
 1. omit or merge sources of information about potential victims and see the effect on the estimates;
 2. estimate the coverage of confidence intervals reported by Silverman (2014) through a parametric Bootstrap; and
