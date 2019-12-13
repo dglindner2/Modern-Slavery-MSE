@@ -23,6 +23,9 @@ pacman::p_load("shiny", "shinycssloaders", "knitr", "kableExtra",
                "tidyverse", "dga", "MCMCpack", "Rcapture", "LCMCR",
                "UpSetR", "DT", "ggplot2", "cowplot", "resample", 
                "pbapply", "parallel")
+
+source("../input/silverman_code/datasets.R")
+source("../input/silverman_code/functions.R")
 ```
 
 # 1. Introduction
@@ -68,13 +71,32 @@ In the context of modern slavery, the samples are obtained by **organizations** 
 
 The overlap between the lists has been computed by a trusted analyst, and the data is summarized below. The rows represent inclusion paterns and the associated count. For instance, the first row, with a "1" under the list LA and with "0" under all other lists, states that exactly 54 potential victims have been observed by local authorities (LA) and by no one else. The row with "1" under both LA and NG, with "0" under other lists, counts individuals recorded by both LA and NG, and by no one else. Using these counts for all possible pattern of overlaps, multiple systems estimation provides an estimate of the total population size, including unobserved  potential victims.
 
-```{r}
+```{r, fig.align="center"}
 # HTML rendering of the `UKdat` table.
 knitr::kable(UKdat) %>% 
-  kable_styling(full_width=FALSE) %>% 
+  kable_styling(full_width=FALSE, position="center") %>% 
   scroll_box(height = "200px", width="500px") %>% 
   footnote("The data are considered in six lists, labelled as follows:  LA--Local authorities; NG--Non-government organisations; PF--Police forces; GO--Government organisations; GP--General public; NCA--National Crime Agency.", footnote_as_chunk=T)
 ```
+
+This data is also plotted below, showing the counts for all observed inclusion patterns.
+
+```{r}
+plot_MSE_counts <- function(data, ...) {
+  n = ncol(data) - 1
+  dat = uncount(data[, 1:n], data$count)
+  upset(dat, nsets=n, ...)
+}
+
+plot_MSE_counts(UKdat, 
+                sets.bar.color = "cornflowerblue",
+                main.bar.color = "cornflowerblue",
+                matrix.color = "cornflowerblue",
+                mainbar.y.label = "Potential victims count",
+                sets.x.label = "")
+```
+
+## Underlying assumptions
 
 In its simplest form, MSE makes a number of assumptions:
 
@@ -83,7 +105,24 @@ In its simplest form, MSE makes a number of assumptions:
 3. *Closed population:* the population size does not change during the study.
 4. *Perfect matching:* the overlap between lists is computed without any error.
 
-These are very restrictive and unlikely to be satisfied in reality. However, when using more than two lists, we can account for dependence between the lists by also modelling and estimating interaction terms. 
+These are very restrictive and unlikely to be satisfied in reality. Fortunately, we can account for dependence between the lists by also modelling and estimating interaction terms. This is done through the use of a log-linear model with interactions terms.
+
+## Log-linear model
+
+Precisely, for every lists subset $A \subset \{\text{LA}, \text{NG}, \text{PF}, \text{GO}, \text{GP}, \text{NCA}\}$, we model the count $N_A$ of individuals observed on lists in $A$ and on no other lists as
+$$
+  N_A \sim \text{Poisson}\left(\exp\left( \mu + \sum_{i \in A} \alpha_i + \sum_{i,j\in A,\,i\not = j} \lambda_{i,j} \right)\right).
+$$
+The parameters $\alpha_i$ are main effects and the $\lambda_{i,j}$ are interaction terms. In particular, the number of *unobserved victims* which we are interested about is
+$$
+  N_\emptyset \sim \text{Poisson}(\exp(\mu)), \quad \mathbb{E}[N_\emptyset] = \exp(\mu).
+$$
+
+This log-linear Poisson count model is an approximation to a multinomial model and the parameters can be interpreted in term of joint list inclusion probabilities, although this level of detail is not necessary for our purpose.
+
+## Silverman's (2014) `MSEfit` function
+
+
 
 # 3. Benchmark {.tabset}
 
