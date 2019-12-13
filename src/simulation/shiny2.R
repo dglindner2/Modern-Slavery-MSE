@@ -12,7 +12,7 @@ ui <- fluidPage(
                                      selected = "UKdat"), 
                         selectInput(inputId = "Nb_Sim", 
                                     label = "Number of simulations", 
-                                    choices = c("20", "100", "200", "1200", "5000"), 
+                                    choices = c("20", "100", "200", "1200"), 
                                     selected = "20"),
                         checkboxInput("Preprocess", "Use Pre-processed Data", TRUE),
                         h6("Note: running an actual simulation might take from a few seconds to several hours depending on the # of lists and simulations"),

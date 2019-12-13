@@ -234,7 +234,6 @@ MSEFixed_plot <- function(pop, y_0, y_n, shape, n_lists, refer, remove, nsims){
     closedpCI.t(df, dfreq = T, mX = ~ 1 + .)$CI[1]}), error = function(e) "Error 3")), error = function(e) "Error 2")
   
   MSE_hist(EST, pop, nsims)
-  
 }
 
 MSEfit_plot <- function(pop, y_0, y_n, shape, n_lists, refer, remove, nsims){

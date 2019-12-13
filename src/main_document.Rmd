@@ -59,7 +59,7 @@ We provide an introduction to MSE in Section 2, the tool is embedded in Section 
 
 ```{r}
 shinyAppFile("data_application/shiny.R", options = list(
-    width = "100%", height = 1000
+    width = "100%", height = 600
   ))
 ```
 
@@ -75,7 +75,7 @@ shinyAppFile("simulation/shiny2.R", options = list(
 
 ```{r}
 shinyAppFile("generative/shiny.R", options = list(
-    width = "100%", height = 1000
+    width = "100%", height = 1400
   ))
 ```
 
