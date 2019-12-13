@@ -190,7 +190,7 @@ An example of simulated data is plotted and an histogram of the estimates for th
 
 ```{r}
 shinyAppFile("generative/shiny.R", options = list(
-    width = "100%", height = 1400
+    width = "100%", height = 1200
   ))
 ```
 

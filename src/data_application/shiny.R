@@ -1,21 +1,3 @@
-library(shiny)
-library(shinycssloaders)
-
-library(knitr)
-# install.packages("kableExtra")
-library(kableExtra)
-library(tidyverse)
-
-# install.packages(c("dga", "MCMCpack", "Rcapture", "LCMCR", "MASS", "coda"))
-library(dga)
-library(MCMCpack)
-library(Rcapture)
-library(LCMCR)
-library(UpSetR)
-library(DT)
-
-source("../input/silverman_code/datasets.R")
-source("../input/silverman_code/functions.R")
 
 extract_dataset <- function(dataset){
   if(is.character(dataset)){
