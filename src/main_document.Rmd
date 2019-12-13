@@ -17,7 +17,7 @@ output:
       collapsed: true
 ---
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message = FALSE}
 if(!require(pacman)){install.packages("pacman")}
 pacman::p_load("shiny", "shinycssloaders", "knitr", "kableExtra", 
                "tidyverse", "dga", "MCMCpack", "Rcapture", "LCMCR",
