@@ -1,30 +1,30 @@
 # read in preprocessed simulations
-estimates620 <- readRDS("src/simulation/sims/UKdatsim20.Rds") # Ukdat (6 lists) 20 simulations
-estimates6100 <- readRDS("src/simulation/sims/UKdatsim100.Rds")
-estimates6200 <- readRDS("src/simulation/sims/UKdatsim200.Rds")
-estimates6 <- readRDS("src/simulation/sims/UKdatsim.Rds") # UKdat (6 lists) 1200 simulations
-estimates520 <- readRDS("src/simulation/sims/UKdat_5sim20.Rds")
-estimates5100 <- readRDS("src/simulation/sims/UKdat_5sim100.Rds")
-estimates5200 <- readRDS("src/simulation/sims/UKdat_5sim200.Rds")
-estimates5 <- readRDS("src/simulation/sims/UKdat_5sim.Rds")
-estimates420 <- readRDS("src/simulation/sims/UKdat_4sim20.Rds")
-estimates4100 <- readRDS("src/simulation/sims/UKdat_4sim100.Rds")
-estimates4200 <- readRDS("src/simulation/sims/UKdat_4sim200.Rds")
-estimates4 <- readRDS("src/simulation/sims/UKdat_4sim.Rds")
-tablesum <- readRDS("src/simulation/sims/tablesum.Rds")
+estimates620 <- readRDS("simulation/sims/UKdatsim20.Rds") # Ukdat (6 lists) 20 simulations
+estimates6100 <- readRDS("simulation/sims/UKdatsim100.Rds")
+estimates6200 <- readRDS("simulation/sims/UKdatsim200.Rds")
+estimates6 <- readRDS("simulation/sims/UKdatsim.Rds") # UKdat (6 lists) 1200 simulations
+estimates520 <- readRDS("simulation/sims/UKdat_5sim20.Rds")
+estimates5100 <- readRDS("simulation/sims/UKdat_5sim100.Rds")
+estimates5200 <- readRDS("simulation/sims/UKdat_5sim200.Rds")
+estimates5 <- readRDS("simulation/sims/UKdat_5sim.Rds")
+estimates420 <- readRDS("simulation/sims/UKdat_4sim20.Rds")
+estimates4100 <- readRDS("simulation/sims/UKdat_4sim100.Rds")
+estimates4200 <- readRDS("simulation/sims/UKdat_4sim200.Rds")
+estimates4 <- readRDS("simulation/sims/UKdat_4sim.Rds")
+tablesum <- readRDS("simulation/sims/tablesum.Rds")
 
 # model
-model6 <- readRDS("src/simulation/models/model6.Rds") # Silverman's model with UKdat (6 lists)
-model5 <- readRDS("src/simulation/models/model5.Rds")
-model4 <- readRDS("src/simulation/models/model4.Rds")
+model6 <- readRDS("simulation/models/model6.Rds") # Silverman's model with UKdat (6 lists)
+model5 <- readRDS("simulation/models/model5.Rds")
+model4 <- readRDS("simulation/models/model4.Rds")
 
 
 library(tidyverse)
 library(pbapply)
 # install.packages(c("dga", "MCMCpack", "Rcapture", "LCMCR", "MASS", "coda"))
 library(parallel)
-source("input/silverman_code/datasets.R")
-source("input/silverman_code/functions.R")
+source("../input/silverman_code/datasets.R")
+source("../input/silverman_code/functions.R")
 
 
 # Function to generate the simulation

@@ -1,17 +1,9 @@
 library(shiny)
+library(shinycssloaders)
 
-source("src/simulation/preprocess_dat_mod.R")
-
-#simulations
+source("simulation/preprocess_dat_mod.R")
 
 ui <- fluidPage(
-  
-
-  navbarPage("MSE for Modern Slavery",
-             
-             
-             tabPanel("Real Data Sensitivities"),
-             
              tabPanel("Coverage and CIs",
                       sidebarPanel(
                         
@@ -32,13 +24,7 @@ ui <- fluidPage(
                         #https://github.com/andrewsali/shinycssloaders
                         ),
                       tableOutput('table'),
-             ),
-             
-             tabPanel("Generative Model Types"),
-             
-             tabPanel("Overall Summary")
-             
-  )
+             )
 )
 
 
