@@ -57,7 +57,11 @@ We provide an introduction to MSE in Section 2, the tool is embedded in Section 
 
 ## Data manipulation
 
-
+```{r}
+shinyAppFile("data_application/shiny.R", options = list(
+    width = "100%", height = 1000
+  ))
+```
 
 ## Bootstrap simulation
 
