@@ -174,7 +174,19 @@ shinyAppFile("simulation/shiny2.R", options = list(
 
 ## Generative models
 
+Generate data by:
 
+1. Choosing a true population size.
+
+2. Choose parameters for individual list inclusion probabilities. Each simulated individual has a given probability of being included on each of the list, going from the specified highest probability to the specified lowest one. The "Shape of Inclusion Line" parameter determines how quickly the inclusion probability decreases among individuals, with a 1 corresponding to linear decrease, a value greater than 1 being a slow decrease, and a value smaller than 1 being a quick decrease. The exact function is plotted under the "Run" button after it is pressed.
+
+3. The "list referral probability" is the probability than an individual is refered to another list after being seen. In our simulation, each individual can only be refered once.
+
+4. The "list removal probability" is the probability that an individual is "scooped" by one of the list after being seen and isn't seen by any other.
+
+5. The "number of simulations" represent the number of simulated datasets on which `MSEfit` is applied.
+
+An example of simulated data is plotted and an histogram of the estimates for the simulated datasets is drawn together with the true population size.
 
 ```{r}
 shinyAppFile("generative/shiny.R", options = list(

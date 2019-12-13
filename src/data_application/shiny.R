@@ -13,15 +13,11 @@ library(Rcapture)
 library(LCMCR)
 library(UpSetR)
 library(DT)
+
 source("../input/silverman_code/datasets.R")
 source("../input/silverman_code/functions.R")
 
 extract_dataset <- function(dataset){
-  
-  if(!exists("UKdat")){
-    source("input/silverman_code/datasets.R")
-  }
-  
   if(is.character(dataset)){
     data1 <- get(dataset)
   }
