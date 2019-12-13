@@ -17,6 +17,13 @@ output:
       collapsed: true
 ---
 
+```{r, echo=FALSE}
+if(!require(pacman)){install.packages("pacman")}
+pacman::p_load("shiny", "shinycssloaders", "knitr", "kableExtra", 
+               "tidyverse", "dga", "MCMCpack", "Rcapture", "LCMCR",
+               "UpSetR", "DT", "ggplot2", "cowplot", "resample", 
+               "pbapply", "parallel")
+```
 
 # 1. Introduction
 
@@ -55,8 +62,28 @@ For example, imagine we are trying to estimate the number of fish in a large pon
 1. mark a first sample of fish, of size $N_1$, and release them back;
 2. take a second sample of fish, of size $N_2$, and count the overlap $m$ with the first sample.
 
-We then have observed a proportion $m/N_1$ of the fish in the first sample. Extrapolating, we assume that our sample of size $N_2$ represents a proportion $m/N_1$ of the total population size $N$. Rearranging the terms, this gives an estimate $\hat N = N_1 N_2 / m$.
+We then have observed a proportion $m/N_1$ of the fish in the first sample. Extrapolating, we assume that our sample of size $N_2$ represents a proportion $m/N_1$ of the total population size $N$. Rearranging the terms, this gives an estimate $\hat{N} = N_1 N_2 / m$.
 
+In the context of modern slavery, the samples are obtained by **organizations** observing **potential victims** and recording the information in **lists**. In Silverman's (2014) study, the data recording observed potential victims is considered in six lists: local authorities (LA), non-government organisations (NG), police forces (PF), government organisations (GO), general public (GP), and national crime agency (NCA).
+
+The overlap between the lists has been computed by a trusted analyst, and the data is summarized below. The rows represent inclusion paterns and the associated count. For instance, the first row, with a "1" under the list LA and with "0" under all other lists, states that exactly 54 potential victims have been observed by local authorities (LA) and by no one else. The row with "1" under both LA and NG, with "0" under other lists, counts individuals recorded by both LA and NG, and by no one else. Using these counts for all possible pattern of overlaps, multiple systems estimation provides an estimate of the total population size, including unobserved  potential victims.
+
+```{r}
+# HTML rendering of the `UKdat` table.
+knitr::kable(UKdat) %>% 
+  kable_styling(full_width=FALSE) %>% 
+  scroll_box(height = "200px", width="500px") %>% 
+  footnote("The data are considered in six lists, labelled as follows:  LA--Local authorities; NG--Non-government organisations; PF--Police forces; GO--Government organisations; GP--General public; NCA--National Crime Agency.", footnote_as_chunk=T)
+```
+
+In its simplest form, MSE makes a number of assumptions:
+
+1. *Independence:* the lists are independent from one another.
+2. *Homogeneity:* on a given list, all the individuals have the same probability of being recorded.
+3. *Closed population:* the population size does not change during the study.
+4. *Perfect matching:* the overlap between lists is computed without any error.
+
+These are very restrictive and unlikely to be satisfied in reality. However, when using more than two lists, we can account for dependence between the lists by also modelling and estimating interaction terms. 
 
 # 3. Benchmark {.tabset}
 
