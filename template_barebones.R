@@ -132,6 +132,9 @@ plot_MSE_counts <- function(data, ...) {
   upset(dat, nsets=n, ...)
 }
 
+#global variables:
+
+col_choices <- colnames(UKdat)[colnames(UKdat)!="count"]
 
 
 ui <- fluidPage(
@@ -139,52 +142,53 @@ ui <- fluidPage(
   navbarPage(
     
     tabPanel("Real Data Sensitivities",
-             sidebarPanel(
-               selectizeInput(inputId = "list1",
-                              label = "First List (select up to 6 existing lists)",
-                              choices = colnames(UKdat),
-                              multiple = TRUE,
-                              options = list(maxItems = 6)),
-                          
-               selectizeInput(inputId = "list2",
-                              label = "Second List (select up to 6 existing lists)",
-                              choices = colnames(UKdat),
-                              multiple = TRUE,
-                              options = list(maxItems = 6)),
-                          
-               selectizeInput(inputId = "list3",
-                              label = "Third List (select up to 6 existing lists)",
-                              choices = colnames(UKdat),
-                              multiple = TRUE,
-                              options = list(maxItems = 6)),
-                          
-               selectizeInput(inputId = "list4",
-                              label = "Fourth List (select up to 6 existing lists)",
-                              choices = colnames(UKdat),
-                              multiple = TRUE,
-                              options = list(maxItems = 6)),
-                          
-               selectizeInput(inputId = "list5",
-                              label = "Fifth List (select up to 6 existing lists)",
-                              choices = colnames(UKdat),
-                              multiple = TRUE,
-                              options = list(maxItems = 6)),
-                          
-               selectizeInput(inputId = "list6",
-                              label = "Sixth List (select up to 6 existing lists)",
-                              choices = colnames(UKdat),
-                              multiple = TRUE,
-                              options = list(maxItems = 6)),
-               div(align="right",
-                   actionButton(inputId = "create_data", label="Create Customized Dataset"))),
+             titlePanel("Real Data Sensitivity"),
+             fluidRow(
+               column(4,
+                      selectizeInput(inputId = "list1",
+                                     label = "First List (select up to 6 existing lists)",
+                                     choices = col_choices,
+                                     multiple = TRUE,
+                                     options = list(maxItems = 6))),
+               column(4,
+                      selectizeInput(inputId = "list2",
+                                     label = "Second List (select up to 6 existing lists)",
+                                     choices = col_choices,
+                                     multiple = TRUE,
+                                     options = list(maxItems = 6))),
+               column(4,
+                      selectizeInput(inputId = "list3",
+                                     label = "Third List (select up to 6 existing lists)",
+                                     choices = col_choices,
+                                     multiple = TRUE,
+                                     options = list(maxItems = 6))),
+             ),
+             fluidRow(
+               column(4,
+                      selectizeInput(inputId = "list4",
+                                     label = "Fourth List (select up to 6 existing lists)",
+                                     choices = col_choices,
+                                     multiple = TRUE,
+                                     options = list(maxItems = 6))),
+               column(4,
+                      selectizeInput(inputId = "list5",
+                                     label = "Fifth List (select up to 6 existing lists)",
+                                     choices = col_choices,
+                                     multiple = TRUE,
+                                     options = list(maxItems = 6))),
+               column(4,
+                      selectizeInput(inputId = "list6",
+                                     label = "Sixth List (select up to 6 existing lists)",
+                                     choices = col_choices,
+                                     multiple = TRUE,
+                                     options = list(maxItems = 6))),
+             ),           
+             fluidRow(div(align="right",
+                          actionButton(inputId = "create_data", label="Create Customized Dataset"))
+             ),
              mainPanel(
                plotOutput(outputId = "MSE_plot"),
-               tableOutput(outputId = "MSE_CI"))),
-    
-    tabPanel("Generative Model Types"),
-    
-    tabPanel("Overall Summary")
-    
+               tableOutput(outputId = "MSE_CI")))
   )
 )
 
