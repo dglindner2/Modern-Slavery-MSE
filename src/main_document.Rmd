@@ -145,10 +145,14 @@ Second, we study the coverage of Silverman's `MSEfit` method in a parametric boo
 
 Third, we consider simulated data where the user is allowed to modify the true population size, the lists inclusion probabilities, the probability of an individual being "scooped" by one of the list and not found by any other, and the probability of an individual being referred by one of the list to another. The *Inclusion Probability* parameters allows the user to experiment with non-homogeneous list inclusion probabilities.
 
-**Usage recommentation:** Please allow one minute for the first plot to appear, before begining interacting with the application.
+**Usage recommentation:** <span style="color:red;"> Please allow one minute for the first plot to appear, before begining interacting with the application.</span>
 
 
 ## Data manipulation
+
+Create up to six sources of information by selecting lists to use, or multiple lists to merge together. Fields can be left empty to omit certain sources.
+
+The data obtained for the selection of lists is plotted below, and the results of the `MSEfit` function, with the estimated population size as `abundance` and lower and upper confidence limits, is printed underneath the plot.
 
 ```{r}
 shinyAppFile("data_application/shiny.R", options = list(
@@ -158,9 +162,9 @@ shinyAppFile("data_application/shiny.R", options = list(
 
 ## Bootstrap simulation
 
-This tab assesses the reliability of Silverman's MSE approach through bootstrap simulations. Silverman developped an R package called "moderslavmse" (2018) to reproduce the MSE method used in his original paper (stepwise assuming only to way interactions). Here, We first reproduce Silverman's model on either of the three UK datasets. From this model, we generate datasets on which we fit new models with the same method. We finally plot estimates extracted from each simulated model and display coverage based on  [Silverman et al. (2015)](https://rss.onlinelibrary.wiley.com/doi/full/10.1111/j.1740-9713.2015.00824.x) in a table. Note: By clicking the "use pre-processed data" box, the user has the possibility to generate faster results using pre-processed simulations.
-We can observe low coverage, especially when dealing with six or five lists, which shows that Confidence interval produced might be too narrow. This low coverage and the instability of the model question the reliability of the MSE method used by Silverman to estimate the number of victims of modern slavery.
+Select one of three datasets and a number of iterations for a parametric bootstrap study. An histogram representing the bootstrap estimates and the true population size (full vertical line) shows the accuracy of the `MSEfit` method. The estimated coverage of `MSEfit` on the selected dataset is printed under the histogram.
 
+We recommend using pre-processed data, as otherwise the simulations can take multiple hours to run. Executing this application on a machine with many cores will improve performance.
 
 ```{r}
 shinyAppFile("simulation/shiny2.R", options = list(
@@ -170,11 +174,6 @@ shinyAppFile("simulation/shiny2.R", options = list(
 
 ## Generative models
 
-Multiple systems estimation makes two key assumptions: that each individual has an equal probability of being caught, and that each list is independent of each other. However, when considering the task at hand, these assumptions will not necessarily be met. Modern slavery is a broad term, and some forms of slavery are more exposed to the public than others. The probability of being found certainly varies depending on the individual’s situation. Furthermore, an observed individual will likely not be released back into their situation. They have been rescued from slavery and will not be captured again by another list. Correlation between lists can occur both when an individual is observed and removed from their situation altogether and when lists share information about observed individuals with each other.
-
-This tab provides the opportunity 
-
-We see that MSE provides an accurate estimate of a simulated population when inclusion probability is constant across the population and there is no referral or removal between lists. However, when we induce correlation between the lists or change the inclusion probabilities across the population, the MSE estimates break down. This simulation study suggests that in our context of quantifying modern slavery, multiple systems estimation is not an appropriate method.
 
 
 ```{r}
