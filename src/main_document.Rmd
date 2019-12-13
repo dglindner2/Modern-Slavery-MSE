@@ -52,7 +52,10 @@ We provide an introduction to MSE in Section 2, the tool is embedded in Section 
 Multiple systems estimation, also called capture-recapture, is a method which combines multiple sources of information to estimate the size of hidden populations. 
 For example, imagine we are trying to estimate the number of fish in a large pond. It is not possible to enumerate all fish, but we are able to take random samples with replacements. A strategy to get an estimate of the total population is the following:
 
-1. 
+1. mark a first sample of fish, of size $N_1$, and release them back;
+2. take a second sample of fish, of size $N_2$, and count the overlap $m$ with the first sample.
+
+We then have observed a proportion $m/N_1$ of the fish in the first sample, and we can infer that, in totally
 
 # 3. Benchmark {.tabset}
 
