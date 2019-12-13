@@ -50,12 +50,13 @@ We provide an introduction to MSE in Section 2, the tool is embedded in Section 
 # 2. Multiple systems estimation for the quantification of modern slavery
 
 Multiple systems estimation, also called capture-recapture, is a method which combines multiple sources of information to estimate the size of hidden populations. 
-For example, imagine we are trying to estimate the number of fish in a large pond. It is not possible to enumerate all fish, but we are able to take random samples with replacements. A strategy to get an estimate of the total population is the following:
+For example, imagine we are trying to estimate the number of fish in a large pond. It is not possible to enumerate all fish, but we are able to take random samples with replacements. A strategy to get an estimate of the unknown total population $N$ is the following:
 
 1. mark a first sample of fish, of size $N_1$, and release them back;
 2. take a second sample of fish, of size $N_2$, and count the overlap $m$ with the first sample.
 
-We then have observed a proportion $m/N_1$ of the fish in the first sample, and we can infer that, in totally
+We then have observed a proportion $m/N_1$ of the fish in the first sample. Extrapolating, we assume that our sample of size $N_2$ represents a proportion $m/N_1$ of the total population size $N$. Rearranging the terms, this gives an estimate $\hat N = N_1 N_2 / m$.
+
 
 # 3. Benchmark {.tabset}
 
@@ -84,5 +85,6 @@ shinyAppFile("generative/shiny.R", options = list(
 ```
 
 # 4. Conclusions
+
 
 
