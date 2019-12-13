@@ -1,6 +1,6 @@
 ---
 title: "Benchmarking the accuracy of multiple systems estimation for the quantification of modern slavery"
-author: "George Linder, Morris Greenberg, Pierre Gardan and Olivier Binette"
+author: "George Lindner, Morris Greenberg, Pierre Gardan and Olivier Binette"
 date: 'December 14, 2019'
 runtime: shiny
 output:
