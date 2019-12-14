@@ -196,7 +196,7 @@ shinyAppFile("generative/shiny.R", options = list(
   ))
 ```
 
-# 4. Conclusions
+# 4. Discussion
 
 ## 4.1. Data manipulation
 
