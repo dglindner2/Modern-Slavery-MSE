@@ -198,5 +198,20 @@ shinyAppFile("generative/shiny.R", options = list(
 
 # 4. Conclusions
 
+## 4.1. Data manipulation
+
+At a high level, an MSE estimate can change due to (1) the size of the observed population changing, and (2) the overlap between individual observed lists changing. For the purposes of the application of MSE for slave population estimation in the UK, (1) could occur if a new list of slaves were published or if an existing list was removed, and (2) could occur if some lists directly feed in to other lists. One way to robustly examine the sensitivity of the current data generation is to allow for a user to create their own dataset, by mixing and matching the lists from the original UK dataset of slave estimates. 
+
+By rearranging the lists within the UK dataset in the "Data manipulation" tab, we can see that high correlation between lists tends to shrink the estimated population considerably, whereas less overall observed data tends to shrink the estimated population moderately.
+
+## 4.1. Bootstrap simulation
+
+We have assessed the reliability of Silverman's MSE approach through bootstrap simulations. We can observe low coverage, especially when dealing with six or five lists, which shows that confidence interval produced might be too narrow and may overstate accuracy.
+
+## 4.2. Generative models
+
+Multiple systems estimation makes two key assumptions: that each individual has an equal probability of being caught, and that each list is independent of each other. However, when considering the task at hand, these assumptions will not necessarily be met. Modern slavery is a broad term, and some forms of slavery are more exposed to the public than others. The probability of being found certainly varies depending on the individual’s situation. Furthermore, an observed individual will likely not be released back into their situation. They have been rescued from slavery and will not be captured again by another list. Correlation between lists can occur both when an individual is observed and removed from their situation altogether and when lists share information about observed individuals with each other.
+
+We see that MSE provides an accurate estimate of a simulated population when inclusion probability is constant across the population and there is no referral or removal between lists. However, when we induce correlation between the lists or change the inclusion probabilities across the population, the MSE estimates break down. This simulation study suggests that in our context of quantifying modern slavery, multiple systems estimation may not be entirely appropriate. The estimates can be misleading if the homogeneous list inclusion probabilities assumption is not met.
 
 
